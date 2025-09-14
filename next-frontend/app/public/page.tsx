@@ -27,7 +27,7 @@ export default async function Home() {
               Welcome to Trinket
             </h1>
             <p className="text-lg text-muted-foreground mb-4">
-              Discover amazing 3D collections from creators around the world
+              See what others are trinketizing!
             </p>
             <div className="flex gap-2 justify-center">
               <Link href="/auth/login">
@@ -38,7 +38,7 @@ export default async function Home() {
           
           <div>
             <h2 className={`font-bold text-lg ${albertSans.className}`}>
-              Recent Trinkets
+              Public Trinkets
             </h2>
             <RecentTrinkets />
           </div>
