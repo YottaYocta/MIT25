@@ -49,8 +49,15 @@ export async function POST(req: Request) {
       userId = body.user_id ?? null;
       title = body.title ?? null;
       note = body.note ?? null;
-      if (typeof body.image_base64 === "string" && body.image_base64.length > 0) {
-        const b64Str: string = body.image_base64;
+      // Support both legacy key image_base64 and new key image
+      const provided =
+        (typeof body.image_base64 === "string" && body.image_base64.length > 0)
+          ? body.image_base64
+          : (typeof body.image === "string" && body.image.length > 0)
+            ? body.image
+            : null;
+      if (provided) {
+        const b64Str: string = provided;
         const commaIdx = b64Str.indexOf(",");
         const header = commaIdx >= 0 ? b64Str.slice(0, commaIdx) : "";
         const base64 = commaIdx >= 0 ? b64Str.slice(commaIdx + 1) : b64Str;
