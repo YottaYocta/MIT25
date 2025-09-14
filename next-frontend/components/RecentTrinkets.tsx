@@ -55,7 +55,7 @@ export function RecentTrinkets({ count = 10 }: RecentTrinketsProps) {
             gapSpacing={0}
             coordMapping={{ power: 1.4 }}
             handleFocused={(index) => setFocusedIndex(index)}
-            className="h-96"
+            className="h-full"
           >
             {recentTrinkets.map((trinket, index) => (
               <TrinketPedestal
