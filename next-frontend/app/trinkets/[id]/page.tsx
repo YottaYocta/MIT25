@@ -40,6 +40,8 @@ export default function TrinketPage() {
           console.error('❌ TrinketPage: API request failed with status:', response.status);
           if (response.status === 404) {
             setError('Trinket not found');
+          } else if (response.status === 401) {
+            setError('This trinket is private. Please sign in to view it.');
           } else {
             setError('Failed to load trinket');
           }

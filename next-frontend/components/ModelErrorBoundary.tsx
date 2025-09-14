@@ -28,14 +28,16 @@ export class ModelErrorBoundary extends Component<Props, State> {
     console.error('🚨 ModelErrorBoundary: Component stack:', errorInfo.componentStack);
     
     // Log detailed error information for debugging
-    if (error.message.includes('fetch')) {
+    if (error.message.includes('fetch') || error.message.includes('network')) {
       console.error('🌐 ModelErrorBoundary: Network error - Model file could not be fetched');
-    } else if (error.message.includes('parse') || error.message.includes('invalid')) {
+    } else if (error.message.includes('parse') || error.message.includes('invalid') || error.message.includes('JSON')) {
       console.error('🔧 ModelErrorBoundary: Parse error - Model file format is invalid or corrupted');
-    } else if (error.message.includes('404')) {
+    } else if (error.message.includes('404') || error.message.includes('not found')) {
       console.error('🔍 ModelErrorBoundary: File not found - Model file does not exist');
-    } else if (error.message.includes('401') || error.message.includes('403')) {
+    } else if (error.message.includes('401') || error.message.includes('403') || error.message.includes('Unauthorized') || error.message.includes('Authentication')) {
       console.error('🔐 ModelErrorBoundary: Authentication error - No permission to access model file');
+    } else if (error.message.includes('Unexpected token')) {
+      console.error('🔧 ModelErrorBoundary: File format error - Expected model file but received HTML/text');
     }
   }
 

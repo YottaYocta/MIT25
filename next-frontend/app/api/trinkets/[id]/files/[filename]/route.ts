@@ -14,6 +14,28 @@ export async function GET(_req: Request, ctx: Params) {
   
   const supabase = await createClient();
 
+  // First check if the trinket is publicly accessible by checking its visibility
+  console.log('🔍 API Route: Checking trinket visibility...');
+  const { data: trinketVisibility, error: visibilityError } = await supabase
+    .from("trinkets")
+    .select("visibility")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (visibilityError || !trinketVisibility) {
+    console.error('❌ API Route: Could not check trinket visibility:', visibilityError);
+    return NextResponse.json({ error: "Trinket not found" }, { status: 404 });
+  }
+
+  // For non-public trinkets, check authentication
+  if (trinketVisibility.visibility !== 'public') {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      console.error('❌ API Route: Private trinket requires authentication');
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+  }
+
   // First verify the trinket exists and get the file paths
   console.log('🔍 API Route: Querying database for trinket...');
   const { data: trinket, error: trinketError } = await supabase

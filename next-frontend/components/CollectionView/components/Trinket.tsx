@@ -57,7 +57,17 @@ function GLTFModel({ modelPath }: { modelPath: string }) {
       console.error('❌ GLTFModel: Error message:', error.message);
       console.error('❌ GLTFModel: Error stack:', error.stack);
     } else {
-      console.error('❌ GLTFModel: Non-Error object thrown:', JSON.stringify(error, null, 2));
+      console.error('❌ GLTFModel: Non-Error object thrown:', error);
+    }
+    
+    // Check if it's an authentication error
+    if (error instanceof Error && (error.message.includes('401') || error.message.includes('Unauthorized'))) {
+      console.error('🔐 GLTFModel: Authentication required for model access');
+    }
+    
+    // For promises or other async errors, create a proper Error object
+    if (error && typeof error === 'object' && 'then' in error) {
+      throw new Error('Model loading failed: Authentication or network error');
     }
     
     throw error; // Re-throw to trigger error boundary
