@@ -1,3 +1,4 @@
+// @/next-frontend/components/Collections.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -9,6 +10,7 @@ interface GroupedRandomTrinketsProps {
   minGroupSize?: number;
   maxGroupSize?: number;
   maxGroups?: number; // Optional: limit total number of groups/cards rendered
+  user?: { id: string }; // optional user prop to filter trinkets by owner_id
 }
 
 function groupTrinketsRandomly<T>(
@@ -18,7 +20,6 @@ function groupTrinketsRandomly<T>(
 ): T[][] {
   const shuffled = [...trinkets].sort(() => Math.random() - 0.5);
   const groups: T[][] = [];
-
   let i = 0;
   while (i < shuffled.length) {
     const groupSize =
@@ -27,7 +28,6 @@ function groupTrinketsRandomly<T>(
     groups.push(shuffled.slice(i, i + groupSize));
     i += groupSize;
   }
-
   return groups;
 }
 
@@ -35,6 +35,7 @@ export function Collections({
   minGroupSize = 2,
   maxGroupSize = 4,
   maxGroups = 5,
+  user,
 }: GroupedRandomTrinketsProps) {
   const [allTrinkets, setAllTrinkets] = useState<Trinket[]>([]);
   const [trinketGroups, setTrinketGroups] = useState<Trinket[][]>([]);
@@ -49,7 +50,6 @@ export function Collections({
         console.error("Failed to fetch trinkets", e);
       }
     };
-
     fetchTrinkets();
   }, []);
 
@@ -59,13 +59,21 @@ export function Collections({
       return;
     }
 
+    // Filter trinkets if user is provided
+    let filteredTrinkets = allTrinkets;
+    if (user) {
+      filteredTrinkets = allTrinkets.filter(
+        (trinket) => trinket.owner_id === user.id
+      );
+    }
+
     const grouped = groupTrinketsRandomly(
-      allTrinkets,
+      filteredTrinkets,
       minGroupSize,
       maxGroupSize
     );
     setTrinketGroups(grouped.slice(0, maxGroups));
-  }, [allTrinkets, minGroupSize, maxGroupSize, maxGroups]);
+  }, [allTrinkets, minGroupSize, maxGroupSize, maxGroups, user]);
 
   const startingIndex = 0;
   const [currentIndex, setCurrentIndex] = useState<null | number>(

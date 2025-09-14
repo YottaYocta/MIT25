@@ -58,14 +58,18 @@ export default function RootLayout({
             </defs>
           </svg>
 
-          <Button className="h-8 w-32 justify-center">My Trinkets</Button>
+          <Link href={"/"}>
+            <Button className="h-8 w-32 justify-center">My Trinkets</Button>
+          </Link>
           <Link href={"/upload"}>
             <Button className="w-16 h-16 rounded-full flex items-center justify-center">
               <PlusIcon></PlusIcon>
             </Button>
           </Link>
 
-          <Button className="h-8 w-32 justify-center">Public</Button>
+          <Link href={"/public"}>
+            <Button className="h-8 w-32 justify-center">Public</Button>
+          </Link>
         </div>
       </body>
     </html>

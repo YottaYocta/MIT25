@@ -1,16 +1,17 @@
+// @/next-frontend/components/RecentTrinkets.tsx
 "use client";
 
 import { useState, useEffect } from "react";
-
 import { SpinningCarousel } from "./SpinningCarousel";
 import TrinketPedestal from "./TrinketPedestal";
 import { Trinket } from "@/lib/types";
 
 interface RecentTrinketsProps {
   count?: number; // how many recent trinkets to show, default 10
+  user?: { id: string }; // optional user prop to filter trinkets by owner_id
 }
 
-export function RecentTrinkets({ count = 10 }: RecentTrinketsProps) {
+export function RecentTrinkets({ count = 10, user }: RecentTrinketsProps) {
   const [allTrinkets, setAllTrinkets] = useState<Trinket[]>([]);
   const [recentTrinkets, setRecentTrinkets] = useState<Trinket[]>([]);
   const [focusedIndex, setFocusedIndex] = useState<number>(0);
@@ -26,7 +27,6 @@ export function RecentTrinkets({ count = 10 }: RecentTrinketsProps) {
         console.error(e);
       }
     };
-
     fetchAllTrinkets();
   }, []);
 
@@ -38,14 +38,22 @@ export function RecentTrinkets({ count = 10 }: RecentTrinketsProps) {
       return;
     }
 
-    const sorted = [...allTrinkets].sort(
+    let filteredTrinkets = allTrinkets;
+
+    // If user is provided, filter trinkets by owner_id
+    if (user) {
+      filteredTrinkets = allTrinkets.filter(
+        (trinket) => trinket.owner_id === user.id
+      );
+    }
+
+    const sorted = [...filteredTrinkets].sort(
       (a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
-
     setRecentTrinkets(sorted.slice(0, count));
     setFocusedIndex(0);
-  }, [allTrinkets, count]);
+  }, [allTrinkets, count, user]);
 
   return (
     <div className="flex flex-col gap-3">
