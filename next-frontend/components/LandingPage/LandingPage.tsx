@@ -291,12 +291,12 @@ const LandingPage: React.FC = () => {
             Sign In
           </Button>
           
-          <a
-            href="#" // Replace with actual Discord server link
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center text-lg font-semibold px-8 py-3 rounded-full shadow-xl hover:shadow-purple-500/30 transition-all duration-300 bg-purple-600/30 hover:bg-purple-600/40 backdrop-blur-sm border border-purple-400/20 hover:scale-105"
-          >
+            <a
+              href="https://discord.gg/6MfbJqCMA8"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center text-lg font-semibold px-8 py-3 rounded-full shadow-xl hover:shadow-purple-500/30 transition-all duration-300 bg-purple-600/30 hover:bg-purple-600/40 backdrop-blur-sm border border-purple-400/20 hover:scale-105"
+            >
             Join our Discord!
           </a>
         </div>
