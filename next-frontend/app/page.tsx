@@ -63,7 +63,7 @@ export default async function Home() {
           <TrinketsActions />
         </div>
         <div>
-          <h2 className="font-bold mb-2">View Trinket Images</h2>
+          <h2 className="font-bold mb-2">View Trinket Content</h2>
           <ImageViewer />
         </div>
       </div>
