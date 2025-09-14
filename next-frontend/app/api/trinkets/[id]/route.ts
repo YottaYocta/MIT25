@@ -13,7 +13,23 @@ export async function GET(_req: Request, ctx: Params) {
     .maybeSingle();
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   if (!data) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(data);
+
+  // Generate signed URLs for files if they exist
+  const enhancedData = { ...data };
+  if (data.image_path) {
+    const { data: imageUrl } = supabase.storage
+      .from("trinkets")
+      .getPublicUrl(data.image_path);
+    enhancedData.image_url = imageUrl.publicUrl;
+  }
+  if (data.model_path) {
+    const { data: modelUrl } = supabase.storage
+      .from("trinkets")
+      .getPublicUrl(data.model_path);
+    enhancedData.model_url = modelUrl.publicUrl;
+  }
+
+  return NextResponse.json(enhancedData);
 }
 
 export async function PATCH(req: Request, ctx: Params) {

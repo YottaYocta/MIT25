@@ -4,6 +4,7 @@ import { ensureAndFetchCurrentProfile } from "@/lib/profiles";
 import { LogoutButton } from "@/components/logout-button";
 import { TrinketsActions } from "@/components/trinkets-actions";
 import Link from "next/link";
+import { ImageViewer } from "@/components/image-viewer";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -27,12 +28,6 @@ export default async function Home() {
   }
 
   const profile = await ensureAndFetchCurrentProfile();
-
-  const { data: publicUrlData } = supabase.storage
-    .from("trinkets")
-    .getPublicUrl("images/test_image.png");
-
-  const url = publicUrlData.publicUrl;
 
   return (
     <main className="min-h-svh flex items-center justify-center p-6">
@@ -68,8 +63,8 @@ export default async function Home() {
           <TrinketsActions />
         </div>
         <div>
-          <h2 className="font-bold mb-2">Some Example Images</h2>
-            <img src={url} alt="Trinket" width={800} height={600} />
+          <h2 className="font-bold mb-2">View Trinket Images</h2>
+          <ImageViewer />
         </div>
       </div>
     </main>
