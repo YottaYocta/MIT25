@@ -192,7 +192,16 @@ export default function UploadPage() {
                 <p className="text-sm text-blue-600">Generating model...</p>
               )}
               {genStatus === "error" && genError && (
-                <p className="text-sm text-red-600">Generation error: {genError}</p>
+                <div className="text-sm text-red-600">
+                  {genError.includes("3D generation service") ? (
+                    <div className="space-y-1">
+                      <p className="font-medium">Service Unavailable</p>
+                      <p className="text-xs">{genError}</p>
+                    </div>
+                  ) : (
+                    <p>Generation error: {genError}</p>
+                  )}
+                </div>
               )}
             </div>
 
@@ -245,8 +254,17 @@ export default function UploadPage() {
                   </p>
                 </div>
               )}
-              {genStatus === "error" && (
-                <p className="text-sm text-red-500">{genError}</p>
+              {genStatus === "error" && genError && (
+                <div className="text-sm text-red-500">
+                  {genError.includes("3D generation service") ? (
+                    <div className="space-y-1">
+                      <p className="font-medium">Service Unavailable</p>
+                      <p className="text-xs">{genError}</p>
+                    </div>
+                  ) : (
+                    <p>{genError}</p>
+                  )}
+                </div>
               )}
             </div>
           </div>

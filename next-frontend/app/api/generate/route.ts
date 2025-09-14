@@ -97,6 +97,17 @@ export async function POST(req: Request) {
 
     if (!generatorResponse.ok) {
       const errorText = await generatorResponse.text().catch(() => "");
+      
+      // Check if this is an ngrok offline error
+      if (errorText.includes("ngrok") && errorText.includes("offline") && errorText.includes("ERR_NGROK_3200")) {
+        return NextResponse.json(
+          {
+            error: "The 3D generation service is currently offline. Please contact the administrator to check the GENERATOR_URL environment variable and ensure the ngrok tunnel is running.",
+          },
+          { status: 503 }, // Service Unavailable
+        );
+      }
+      
       return NextResponse.json(
         {
           error:
@@ -323,9 +334,25 @@ export async function POST(req: Request) {
       { status: 200 },
     );
   } catch (err) {
+    // Check if this is a network error (ngrok service unreachable)
+    const errorMessage = (err as Error).message || "Failed to call generator";
+    
+    if (errorMessage.includes("fetch failed") || 
+        errorMessage.includes("ECONNREFUSED") || 
+        errorMessage.includes("ENOTFOUND") ||
+        errorMessage.includes("getaddrinfo") ||
+        errorMessage.includes("network")) {
+      return NextResponse.json(
+        {
+          error: "Unable to connect to the 3D generation service. The service may be offline. Please contact the administrator to check the GENERATOR_URL environment variable and ensure the ngrok tunnel is running.",
+        },
+        { status: 503 }, // Service Unavailable
+      );
+    }
+    
     return NextResponse.json(
-      { error: (err as Error).message || "Failed to call generator" },
-      { status: 502 },
+      { error: errorMessage },
+      { status: 502 }, // Bad Gateway
     );
   }
 }
