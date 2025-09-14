@@ -6,6 +6,7 @@ import { TrinketView } from '@/components/TrinketView';
 import { TrinketData } from '@/components/CollectionView/types';
 import { Trinket } from '@/lib/types';
 import { ConditionalNav } from '@/components/ConditionalNav';
+import FloatingShareButton from '@/components/FloatingShareButton';
 import { Albert_Sans } from 'next/font/google';
 
 const albertSans = Albert_Sans({
@@ -158,6 +159,7 @@ export default function TrinketPage() {
         enableKeyboard={true}
         onClose={handleClose}
       />
+      <FloatingShareButton />
       <ConditionalNav />
     </div>
   );
