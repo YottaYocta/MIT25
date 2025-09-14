@@ -22,7 +22,7 @@ export function CameraController({
   trinketPositions = [],
   navigationDirection = null
 }: CameraControllerProps) {
-  const { camera } = useThree();
+  const { camera, size } = useThree();
   const targetPosition = useRef<THREE.Vector3>(new THREE.Vector3());
   const targetLookAt = useRef<THREE.Vector3>(new THREE.Vector3());
   const currentPosition = useRef<THREE.Vector3>(new THREE.Vector3());
@@ -42,6 +42,14 @@ export function CameraController({
         : 2.5;
       overviewDistance = Math.max(8, sceneRadius * 1.3); // More conservative scaling
       overviewHeight = Math.max(6, sceneRadius * 0.9);
+    }
+
+    // Additional mobile scaling for narrow screens
+    const aspectRatio = size.width / size.height;
+    if (aspectRatio < 0.7 && trinketCount >= 4) {
+      const mobileScaleFactor = 1 + (trinketCount - 3) * 0.15;
+      overviewDistance *= Math.min(mobileScaleFactor, 2.2);
+      overviewHeight *= Math.min(mobileScaleFactor * 0.8, 1.8);
     }
 
     positions.push({
@@ -69,13 +77,13 @@ export function CameraController({
 
         positions.push({
           position: [x, height, z],
-          target: trinketCount === 1 ? [0, 2.5, 0] : [trinketPos[0], trinketPos[1], trinketPos[2]]
+          target: trinketCount === 1 ? [0, 4.0, 0] : [trinketPos[0], trinketPos[1], trinketPos[2]]
         });
       });
     }
 
     return positions;
-  }, [trinketCount, trinketPositions]);
+  }, [trinketCount, trinketPositions, size]);
 
   useEffect(() => {
     const positions = getCameraPositions();
