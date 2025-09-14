@@ -52,7 +52,7 @@ export default function RootLayout({
                 y2="88.9996"
                 gradientUnits="userSpaceOnUse"
               >
-                <stop stop-color="white" />
+                <stop stopColor="white" />
                 <stop offset="1" stop-color="#E9ECFF" />
               </linearGradient>
             </defs>

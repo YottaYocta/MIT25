@@ -22,6 +22,12 @@ export async function GET() {
         .getPublicUrl(trinket.model_path);
       enhanced.model_url = modelUrl.publicUrl;
     }
+    if (trinket.nano_image_path) {
+      const { data: nanoUrl } = supabase.storage
+        .from("trinkets")
+        .getPublicUrl(trinket.nano_image_path);
+      enhanced.nano_url = nanoUrl.publicUrl;
+    }
     return enhanced;
   });
 
