@@ -21,7 +21,8 @@ function ModelDebugger({ modelPath }: { modelPath: string }) {
     const testModel = async () => {
       try {
         console.log('🧪 ModelDebugger: Testing model URL:', modelPath);
-        const response = await fetch(modelPath, { method: 'HEAD' });
+        // Use GET in dev to avoid HEAD method issues on API routes
+        const response = await fetch(modelPath, { method: process.env.NODE_ENV === 'development' ? 'GET' : 'HEAD' });
         console.log('🧪 ModelDebugger: Response status:', response.status);
         console.log('🧪 ModelDebugger: Response headers:', Object.fromEntries(response.headers.entries()));
         
@@ -44,58 +45,19 @@ function ModelDebugger({ modelPath }: { modelPath: string }) {
 // Component for loading GLTF models with proper error handling
 function GLTFModel({ modelPath }: { modelPath: string }) {
   console.log('🔍 GLTFModel: Attempting to load model from:', modelPath);
+  const { scene } = useGLTF(modelPath);
+
   const [isReady, setIsReady] = useState(false);
-  
-  let gltfResult;
-  try {
-    gltfResult = useGLTF(modelPath);
-  } catch (error) {
-    console.error('❌ GLTFModel: useGLTF hook failed for:', modelPath);
-    console.error('❌ GLTFModel: Hook error type:', typeof error);
-    console.error('❌ GLTFModel: Hook error:', error);
-    
-    if (error instanceof Error) {
-      console.error('❌ GLTFModel: Error message:', error.message);
-      console.error('❌ GLTFModel: Error stack:', error.stack);
-    } else {
-      console.error('❌ GLTFModel: Non-Error object thrown:', error);
-    }
-    
-    // Check if it's an authentication error
-    if (error instanceof Error && (error.message.includes('401') || error.message.includes('Unauthorized'))) {
-      console.error('🔐 GLTFModel: Authentication required for model access');
-    }
-    
-    // For promises or other async errors, create a proper Error object
-    if (error && typeof error === 'object' && 'then' in error) {
-      throw new Error('Model loading failed: Authentication or network error');
-    }
-    
-    throw error; // Re-throw to trigger error boundary
-  }
-  
-  if (!gltfResult || !gltfResult.scene) {
-    const error = new Error(`Invalid GLTF result for model: ${modelPath}`);
-    console.error('❌ GLTFModel: Invalid GLTF result:', gltfResult);
-    throw error;
-  }
-  
-  const { scene } = gltfResult;
-  
-  // Wait for model and materials to be fully ready
+
   useEffect(() => {
     if (scene) {
-      // Small delay to ensure materials are properly loaded and applied
       const timer = setTimeout(() => {
-        console.log('✅ GLTFModel: Model ready after delay for:', modelPath);
         setIsReady(true);
-      }, 150); // 150ms delay to ensure proper material loading
-      
+      }, 150);
       return () => clearTimeout(timer);
     }
-  }, [scene, modelPath]);
-  
-  // Don't render until we're ready
+  }, [scene]);
+
   if (!isReady) {
     return (
       <mesh castShadow receiveShadow>
@@ -111,28 +73,23 @@ function GLTFModel({ modelPath }: { modelPath: string }) {
       </mesh>
     );
   }
-  
-  console.log('✅ GLTFModel: Successfully loaded model from:', modelPath);
-  console.log('📊 GLTFModel: Scene data:', scene);
-  
-  // Clone the scene to avoid sharing the same instance
+
   const clonedScene = scene.clone();
-  
-  // Ensure proper material setup for lighting
   clonedScene.traverse((child) => {
     if ((child as THREE.Mesh).isMesh) {
       const mesh = child as THREE.Mesh;
       mesh.castShadow = true;
       mesh.receiveShadow = true;
-      
-      // Ensure materials respond to lighting properly
-      if (mesh.material && 'needsUpdate' in mesh.material) {
-        mesh.material.needsUpdate = true;
+      if (Array.isArray(mesh.material)) {
+        mesh.material.forEach((mat) => {
+          (mat as THREE.Material).needsUpdate = true;
+        });
+      } else if (mesh.material) {
+        (mesh.material as THREE.Material).needsUpdate = true;
       }
     }
   });
-  
-  console.log('🎨 GLTFModel: Scene setup complete for:', modelPath);
+
   return <primitive object={clonedScene} />;
 }
 

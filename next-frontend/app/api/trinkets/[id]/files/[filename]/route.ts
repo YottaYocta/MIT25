@@ -90,6 +90,31 @@ export async function GET(_req: Request, ctx: Params) {
     else if (ext.endsWith('.webp')) contentType = "image/webp";
     else if (ext.endsWith('.gif')) contentType = "image/gif";
     console.log('🖼️ API Route: Serving nano image file:', filePath);
+  } else if (trinket.model_path) {
+    // Support dependent files for .gltf models (e.g., .bin, textures) by resolving
+    // the requested filename relative to the model's directory.
+    // This only supports single-segment filenames (no subdirectories). For nested
+    // paths, consider switching this route to a catch-all [...filename].
+    const modelPath = trinket.model_path;
+    const lastSlashIndex = modelPath.lastIndexOf('/');
+    const baseDir = lastSlashIndex !== -1 ? modelPath.slice(0, lastSlashIndex) : '';
+    const safeFilename = filename.replace(/\.\.+/g, ''); // basic traversal guard
+    const resolvedPath = baseDir ? `${baseDir}/${safeFilename}` : safeFilename;
+
+    // Infer content type from extension
+    const lower = resolvedPath.toLowerCase();
+    if (lower.endsWith('.bin')) contentType = 'application/octet-stream';
+    else if (lower.endsWith('.png')) contentType = 'image/png';
+    else if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) contentType = 'image/jpeg';
+    else if (lower.endsWith('.webp')) contentType = 'image/webp';
+    else if (lower.endsWith('.ktx2')) contentType = 'image/ktx2';
+    else if (lower.endsWith('.basis')) contentType = 'application/octet-stream';
+    else if (lower.endsWith('.hdr')) contentType = 'image/vnd.radiance';
+    else if (lower.endsWith('.exr')) contentType = 'image/exr';
+
+    console.log('🧩 API Route: Attempting to serve dependent model file:', resolvedPath);
+    filePath = resolvedPath;
+    fileName = safeFilename;
   }
 
   if (!filePath) {

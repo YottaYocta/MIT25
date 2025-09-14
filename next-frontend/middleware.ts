@@ -16,6 +16,7 @@ export const config = {
      * Feel free to modify this pattern to include more paths.
      */
     // exclude api routes from middleware
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // also exclude common 3D model and texture file types and public asset paths
+    "/((?!api|_next/static|_next/image|favicon.ico|public/|models/|textures/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|gltf|glb|bin|ktx2|basis|hdr|exr)$).*)",
   ],
 };
