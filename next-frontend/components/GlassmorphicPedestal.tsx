@@ -39,7 +39,7 @@ const GlassmorphicPedestal: FC<GlassmorphicPedestalProps> = ({
         className={`bottom-0 -z-10 absolute w-32 h-32 ${
           focused
             ? "bg-[#8D8BF7]"
-            : "from-[#555]/20 to-[#888]/10 bg-gradient-to-br"
+            : "from-[#555]/20 to-[#888]/10 bg-linear-to-br"
         } rounded-3xl rotate-z-45 rotate-x-45 transition-all duration-300`}
       />
     </button>

@@ -25,7 +25,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
         focused ? "shadow-xl" : "scale-90 opacity-50 shadow-sm"
       } relative flex flex-col bg-white rounded-2xl border border-neutral-200 overflow-clip active:scale-[98%] duration-300`}
     >
-      <div className="flex flex-col bg-gradient-to-b from-[#86A8FF] to-[#8F98FA] items-start gap-2 p-4 text-white shadow border-b border-b-[#8CABFF]">
+      <div className="flex flex-col bg-linear-to-b from-[#86A8FF] to-[#8F98FA] items-start gap-2 p-4 text-white shadow border-b border-b-[#8CABFF]">
         <div className="w-full flex justify-between items-center ">
           <p>{title}</p>
           <p>{date}</p>

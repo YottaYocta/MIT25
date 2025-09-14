@@ -89,7 +89,7 @@ const CameraUpload: React.FC<CameraUploadProps> = ({
   return (
     <div className="w-80 h-80 relative flex flex-col bg-white rounded-2xl border border-neutral-200 overflow-clip shadow group">
       {/* Top Header */}
-      <div className="bg-gradient-to-b from-[#86A8FF] to-[#8F98FA] p-4 shadow border-b border-b-[#8CABFF] z-10">
+      <div className="bg-linear-to-b from-[#86A8FF] to-[#8F98FA] p-4 shadow border-b border-b-[#8CABFF] z-10">
         <p className="text-white font-medium text-sm">
           Choose Trinket Source Image
         </p>
@@ -105,7 +105,7 @@ const CameraUpload: React.FC<CameraUploadProps> = ({
       />
 
       {/* Main Body */}
-      <div className="flex-grow flex flex-col items-center justify-center p-4 gap-4">
+      <div className="grow flex flex-col items-center justify-center p-4 gap-4">
         {/* Camera active preview */}
         {cameraActive ? (
           <div className="flex flex-col items-center gap-2 w-full">

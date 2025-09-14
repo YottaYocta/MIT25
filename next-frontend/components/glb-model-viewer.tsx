@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState, Suspense } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
-import { OrbitControls, useGLTF } from "@react-three/drei";
+import { OrbitControls, Text, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { ErrorBoundary } from "./ErrorBoundary";
 
@@ -86,9 +86,9 @@ export function GLBModelViewer({
         >
           <ErrorBoundary
             fallback={
-              <div className="text-red-500 text-sm text-center p-4">
-                Error loading model.
-              </div>
+              <Text fontSize={0.5} color="red">
+                Something went wrong
+              </Text>
             }
           >
             <Suspense fallback={null}>
