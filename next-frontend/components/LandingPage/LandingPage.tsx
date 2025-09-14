@@ -112,7 +112,8 @@ const LandingPage: React.FC = () => {
             <img
               src={trinketLogo}
               alt="Trinket"
-              className="h-48 md:h-56 lg:h-64 xl:h-72 drop-shadow-2xl object-contain max-w-full"
+              className="h-48 md:h-56 lg:h-64 xl:h-72 drop-shadow-2xl object-contain max-w-full select-none"
+              draggable={false}
             />
           </div>
 
@@ -269,7 +270,8 @@ const LandingPage: React.FC = () => {
           <img
             src={trinketLogo}
             alt="Trinket"
-            className="h-48 md:h-56 lg:h-64 xl:h-72 drop-shadow-2xl object-contain max-w-full"
+            className="h-48 md:h-56 lg:h-64 xl:h-72 drop-shadow-2xl object-contain max-w-full select-none"
+            draggable={false}
           />
         </div>
 

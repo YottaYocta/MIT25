@@ -62,13 +62,13 @@
     transform: translateY(0);
   }
   100% {
-    transform: translateY(-100%);
+    transform: translateY(-50%);
   }
 }
 
 @keyframes scroll-down {
   0% {
-    transform: translateY(-100%);
+    transform: translateY(-50%);
   }
   100% {
     transform: translateY(0);
@@ -76,11 +76,11 @@
 }
 
 .scrolling-column {
-  animation: scroll-up 30s linear infinite;
+  animation: scroll-up 20s linear infinite;
 }
 
 .scrolling-column-reverse {
-  animation: scroll-down 30s linear infinite;
+  animation: scroll-down 20s linear infinite;
 }
 
 /* Pause animation on hover for better UX */
@@ -95,4 +95,6 @@
   will-change: transform;
   backface-visibility: hidden;
   transform-style: preserve-3d;
+  /* Ensure the container extends beyond viewport to prevent visible edges */
+  min-height: 200vh;
 }

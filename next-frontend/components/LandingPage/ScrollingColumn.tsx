@@ -8,9 +8,9 @@ interface ScrollingColumnProps {
 }
 
 const ScrollingColumn: React.FC<ScrollingColumnProps> = ({ images, direction, className = '', style }) => {
-  // Create multiple copies to ensure seamless infinite scrolling
-  // We need enough copies so the animation reset is invisible
-  const duplicatedImages = [...images, ...images, ...images, ...images];
+  // Create enough copies to ensure seamless infinite scrolling
+  // We need at least 2 full sets to create seamless loop, plus extra for buffer
+  const duplicatedImages = [...images, ...images, ...images, ...images, ...images, ...images];
 
   return (
     <div className={`flex flex-col space-y-4 ${className}`} style={style}>
