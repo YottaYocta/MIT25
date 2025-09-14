@@ -53,7 +53,7 @@ export default function RootLayout({
                 gradientUnits="userSpaceOnUse"
               >
                 <stop stopColor="white" />
-                <stop offset="1" stop-color="#E9ECFF" />
+                <stop offset="1" stopColor="#E9ECFF" />
               </linearGradient>
             </defs>
           </svg>

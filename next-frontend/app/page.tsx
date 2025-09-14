@@ -4,7 +4,6 @@ import { LoginForm } from "@/components/login-form";
 import { ensureAndFetchCurrentProfile } from "@/lib/profiles";
 import { LogoutButton } from "@/components/logout-button";
 import Link from "next/link";
-import { ImageViewer } from "@/components/image-viewer";
 import { RecentTrinkets } from "@/components/RecentTrinkets";
 import { Collections } from "@/components/Collections";
 import { Albert_Sans } from "next/font/google";
@@ -68,26 +67,6 @@ export default async function Home() {
             </Link>
             <LogoutButton />
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h2 className="font-bold mb-2">User</h2>
-            <pre className="text-xs font-mono p-3 rounded border max-h-64 overflow-auto">
-              {JSON.stringify(user, null, 2)}
-            </pre>
-          </div>
-          <div>
-            <h2 className="font-bold mb-2">Profile</h2>
-            <pre className="text-xs font-mono p-3 rounded border max-h-64 overflow-auto">
-              {JSON.stringify(profile, null, 2)}
-            </pre>
-          </div>
-        </div>
-
-        <div>
-          <h2 className="font-bold mb-2">View Trinket Content</h2>
-          <ImageViewer />
         </div>
       </div>
     </main>
