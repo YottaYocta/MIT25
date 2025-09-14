@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { LoginForm } from "@/components/login-form";
 import { ensureAndFetchCurrentProfile } from "@/lib/profiles";
 import { LogoutButton } from "@/components/logout-button";
-import { TrinketsActions } from "@/components/trinkets-actions";
+import { TrinketsActions } from "@/components/TrinketsActions";
 import Link from "next/link";
 import { ImageViewer } from "@/components/image-viewer";
 
