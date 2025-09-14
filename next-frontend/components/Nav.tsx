@@ -25,8 +25,8 @@ export const Nav = () => {
             y2="88.9996"
             gradientUnits="userSpaceOnUse"
           >
-            <stop stop-color="white" />
-            <stop offset="1" stop-color="#E9ECFF" />
+            <stop stopColor="white" />
+            <stop offset="1" stopColor="#E9ECFF" />
           </linearGradient>
         </defs>
       </svg>
