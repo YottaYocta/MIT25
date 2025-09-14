@@ -20,14 +20,12 @@ export async function ensureAndFetchCurrentProfile(): Promise<Profile | null> {
 
   const upsertPayload = {
     id: user.id,
-    full_name: (user.user_metadata as any)?.full_name ?? user.email ?? "",
+    full_name: user.user_metadata?.full_name ?? user.email ?? "",
     email: user.email ?? "",
-    avatar_image_path: (user.user_metadata as any)?.avatar_url ?? null,
+    avatar_image_path: user.user_metadata?.avatar_url ?? null,
   } as const;
 
-  await supabase
-    .from("profiles")
-    .upsert(upsertPayload, { onConflict: "id" });
+  await supabase.from("profiles").upsert(upsertPayload, { onConflict: "id" });
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -37,5 +35,3 @@ export async function ensureAndFetchCurrentProfile(): Promise<Profile | null> {
 
   return (profile as Profile) ?? null;
 }
-
-
