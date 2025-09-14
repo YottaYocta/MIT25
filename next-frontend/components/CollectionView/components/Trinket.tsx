@@ -13,6 +13,8 @@ interface TrinketProps {
   radius?: number;
   isFocused?: boolean;
   enableBobbing?: boolean;
+  userRotationY?: number;
+  autoRotate?: boolean;
 }
 
 // Debug component to test model URL accessibility
@@ -98,7 +100,9 @@ export function Trinket({
   position = [0, -0.5, 0],
   radius = 0.3,
   isFocused = false,
-  enableBobbing = false
+  enableBobbing = false,
+  userRotationY = 0,
+  autoRotate = true
 }: TrinketProps) {
   console.log('🔍 Trinket: Rendering trinket with data:', trinket);
   console.log('🔍 Trinket: Model path received:', trinket.modelPath);
@@ -130,7 +134,9 @@ export function Trinket({
 
       let targetRotation: number;
 
-      if (isFocused) {
+      if (!autoRotate) {
+        targetRotation = currentRotation.current;
+      } else if (isFocused) {
         const trinketPos = currentPosition.current;
         const cameraPos = camera.position;
         targetRotation = Math.atan2(cameraPos.x - trinketPos.x, cameraPos.z - trinketPos.z);
@@ -149,7 +155,7 @@ export function Trinket({
         lerpFactor
       );
 
-      groupRef.current.rotation.y = currentRotation.current;
+      groupRef.current.rotation.y = currentRotation.current + userRotationY;
     }
   });
 

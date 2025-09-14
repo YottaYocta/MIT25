@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, Suspense } from 'react';
+import React, { useMemo, Suspense, useRef, useState, useCallback } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Environment } from '@react-three/drei';
 import { TrinketViewProps } from './types';
@@ -28,6 +28,7 @@ export function TrinketView({
   trinket,
   backgroundColor = '#f5f5f5',
   showMetadata = true,
+  enableTouch = true,
   enableKeyboard = true,
   className = '',
   onClose
@@ -43,6 +44,72 @@ export function TrinketView({
   const columnPosition: [number, number, number] = [0, 0, 0];
   const cameraPosition: [number, number, number] = [1.6, 4.2, 1.6];
   const cameraTarget: [number, number, number] = [0, 4.0, 0];
+
+  // Drag-based rotation state
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [userRotationY, setUserRotationY] = useState(0);
+  const dragStartXRef = useRef<number | null>(null);
+  const baseRotationYRef = useRef<number>(0);
+
+  const startDrag = useCallback((clientX: number) => {
+    dragStartXRef.current = clientX;
+    baseRotationYRef.current = userRotationY;
+    setIsDragging(true);
+  }, [userRotationY]);
+
+  const updateDrag = useCallback((clientX: number) => {
+    if (!isDragging || dragStartXRef.current === null) return;
+    const deltaX = clientX - dragStartXRef.current;
+    const rotationPerPixel = 0.006; // radians per pixel
+    setUserRotationY(baseRotationYRef.current + deltaX * rotationPerPixel);
+  }, [isDragging]);
+
+  const endDrag = useCallback(() => {
+    setIsDragging(false);
+    dragStartXRef.current = null;
+  }, []);
+
+  // Touch handlers
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (!enableTouch) return;
+    if (e.touches.length !== 1) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    startDrag(touch.clientX);
+  }, [enableTouch, startDrag]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!enableTouch) return;
+    if (!isDragging) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    updateDrag(touch.clientX);
+  }, [enableTouch, isDragging, updateDrag]);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!enableTouch) return;
+    e.preventDefault();
+    endDrag();
+  }, [enableTouch, endDrag]);
+
+  // Mouse handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    startDrag(e.clientX);
+  }, [startDrag]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    updateDrag(e.clientX);
+  }, [isDragging, updateDrag]);
+
+  const handleMouseUp = useCallback((e: React.MouseEvent) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    endDrag();
+  }, [isDragging, endDrag]);
 
   // Keyboard navigation for close functionality
   React.useEffect(() => {
@@ -62,7 +129,18 @@ export function TrinketView({
   }, [enableKeyboard, onClose]);
 
   return (
-    <div className={`w-full h-screen ${className}`} style={{ backgroundColor }}>
+    <div
+      ref={containerRef}
+      className={`w-full h-screen touch-manipulation ${className}`}
+      style={{ backgroundColor }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+    >
       <Canvas
         camera={{
           position: cameraPosition,
@@ -105,6 +183,8 @@ export function TrinketView({
             radius={0.3}
             isFocused={false}
             enableBobbing={true}
+            userRotationY={userRotationY}
+            autoRotate={!isDragging}
           />
         </Suspense>
 
