@@ -2,9 +2,10 @@ import { createClient } from "@/lib/supabase/server";
 import { LoginForm } from "@/components/login-form";
 import { ensureAndFetchCurrentProfile } from "@/lib/profiles";
 import { LogoutButton } from "@/components/logout-button";
-import { TrinketsActions } from "@/components/TrinketsActions";
 import Link from "next/link";
 import { ImageViewer } from "@/components/image-viewer";
+import { RecentTrinkets } from "@/components/RecentTrinkets";
+import { Collections } from "@/components/Collections";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -30,8 +31,17 @@ export default async function Home() {
   const profile = await ensureAndFetchCurrentProfile();
 
   return (
-    <main className="min-h-svh flex items-center justify-center p-6">
+    <main className="min-h-svh flex items-center justify-center p-6 overflow-x-clip">
       <div className="w-full max-w-2xl flex flex-col gap-6">
+        <div>
+          <h2 className="font-bold mb-2">My Collections</h2>
+          <Collections></Collections>
+        </div>
+
+        <div>
+          <h2 className="font-bold mb-2">Recent Trinkets</h2>
+          <RecentTrinkets></RecentTrinkets>
+        </div>
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold">Trinket</h1>
           <div className="flex items-center gap-3">
@@ -58,10 +68,7 @@ export default async function Home() {
             </pre>
           </div>
         </div>
-        <div>
-          <h2 className="font-bold mb-2">Trinkets API</h2>
-          <TrinketsActions />
-        </div>
+
         <div>
           <h2 className="font-bold mb-2">View Trinket Content</h2>
           <ImageViewer />

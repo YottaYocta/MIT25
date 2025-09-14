@@ -219,7 +219,9 @@ export const SpinningCarousel: React.FC<CarouselProps> = ({
 
   return (
     <div
-      className={`relative overflow-x-visible touch-pan-x ${className || ""}`}
+      className={`relative overflow-x-visible touch-pan-x ${
+        className || ""
+      } min-h-32`}
       ref={containerRef}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
