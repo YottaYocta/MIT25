@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, Suspense, useEffect, useState } from 'react';
+import { useRef, Suspense, useEffect, useState, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
@@ -46,10 +46,29 @@ function ModelDebugger({ modelPath }: { modelPath: string }) {
 
 // Component for loading GLTF models with proper error handling
 function GLTFModel({ modelPath }: { modelPath: string }) {
-  console.log('🔍 GLTFModel: Attempting to load model from:', modelPath);
+  // console.log('GLTFModel: Attempting to load model from:', modelPath);
   const { scene } = useGLTF(modelPath);
 
   const [isReady, setIsReady] = useState(false);
+
+  const clonedScene = useMemo(() => {
+    const clone = scene.clone();
+    clone.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh;
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        if (Array.isArray(mesh.material)) {
+          mesh.material.forEach((mat) => {
+            (mat as THREE.Material).needsUpdate = true;
+          });
+        } else if (mesh.material) {
+          (mesh.material as THREE.Material).needsUpdate = true;
+        }
+      }
+    });
+    return clone;
+  }, [scene]);
 
   useEffect(() => {
     if (scene) {
@@ -76,22 +95,6 @@ function GLTFModel({ modelPath }: { modelPath: string }) {
     );
   }
 
-  const clonedScene = scene.clone();
-  clonedScene.traverse((child) => {
-    if ((child as THREE.Mesh).isMesh) {
-      const mesh = child as THREE.Mesh;
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      if (Array.isArray(mesh.material)) {
-        mesh.material.forEach((mat) => {
-          (mat as THREE.Material).needsUpdate = true;
-        });
-      } else if (mesh.material) {
-        (mesh.material as THREE.Material).needsUpdate = true;
-      }
-    }
-  });
-
   return <primitive object={clonedScene} />;
 }
 
@@ -104,8 +107,7 @@ export function Trinket({
   userRotationY = 0,
   autoRotate = true
 }: TrinketProps) {
-  console.log('🔍 Trinket: Rendering trinket with data:', trinket);
-  console.log('🔍 Trinket: Model path received:', trinket.modelPath);
+  // console.log('Trinket: render', trinket?.id, trinket?.modelPath);
   const groupRef = useRef<THREE.Group>(null);
   const targetPosition = useRef<THREE.Vector3>(new THREE.Vector3(...position));
   const currentPosition = useRef<THREE.Vector3>(new THREE.Vector3(...position));
