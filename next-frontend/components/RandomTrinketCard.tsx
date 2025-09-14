@@ -30,14 +30,23 @@ const RandomTrinketCard: React.FC<RandomTrinketCardProps> = ({
     setRandomTrinket(chosen);
 
     const loadImage = async () => {
+      // Prefer nano if available
+      if (chosen.nano_url) {
+        setImageUrl(chosen.nano_url);
+        return;
+      }
+
       if (chosen.image_url) {
         setImageUrl(chosen.image_url);
         return;
       }
 
-      // Fallback: fetch the image and use a blob URL
+      // Fallback: fetch the nano image and use a blob URL; if that fails, try full image
       try {
-        const res = await fetch(`/api/trinkets/${chosen.id}/files/image`);
+        let res = await fetch(`/api/trinkets/${chosen.id}/files/nano`);
+        if (!res.ok) {
+          res = await fetch(`/api/trinkets/${chosen.id}/files/image`);
+        }
         if (!res.ok) {
           console.warn("Failed to fetch image for trinket", chosen.id);
           return;

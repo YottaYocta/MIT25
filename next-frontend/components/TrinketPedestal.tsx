@@ -16,6 +16,11 @@ export default function TrinketPedestal({ trinket, focused, onClick }: Props) {
     let isMounted = true;
 
     const loadImage = async () => {
+      // Prefer nano url if provided
+      if (trinket.nano_url) {
+        setImageUrl(trinket.nano_url);
+        return;
+      }
       // Use full URL first if present
       if (trinket.image_url) {
         setImageUrl(trinket.image_url);
@@ -28,9 +33,12 @@ export default function TrinketPedestal({ trinket, focused, onClick }: Props) {
         return;
       }
 
-      // Optional: fallback to API fetch for blob URL
+      // Optional: fallback to API fetch for blob URL (prefer nano)
       try {
-        const res = await fetch(`/api/trinkets/${trinket.id}/files/image`);
+        let res = await fetch(`/api/trinkets/${trinket.id}/files/nano`);
+        if (!res.ok) {
+          res = await fetch(`/api/trinkets/${trinket.id}/files/image`);
+        }
         if (res.ok) {
           const blob = await res.blob();
           const url = URL.createObjectURL(blob);
