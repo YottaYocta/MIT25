@@ -62,7 +62,6 @@ export function RecentTrinkets({ count = 10 }: RecentTrinketsProps) {
                 key={trinket.id}
                 trinket={trinket}
                 focused={index === focusedIndex}
-                onClick={() => setFocusedIndex(index)}
               />
             ))}
           </SpinningCarousel>

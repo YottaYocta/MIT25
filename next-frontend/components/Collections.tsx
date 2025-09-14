@@ -67,15 +67,24 @@ export function Collections({
     setTrinketGroups(grouped.slice(0, maxGroups));
   }, [allTrinkets, minGroupSize, maxGroupSize, maxGroups]);
 
+  const startingIndex = 0;
+  const [currentIndex, setCurrentIndex] = useState<null | number>(
+    startingIndex
+  );
+
   return (
-    <SpinningCarousel gapSpacing={130} className="h-96 w-full">
+    <SpinningCarousel
+      gapSpacing={110}
+      className="h-96 w-full"
+      handleFocused={setCurrentIndex}
+    >
       {trinketGroups.map((group, idx) => (
         <RandomTrinketCard
           key={idx}
           trinkets={group}
           renderSubtitle={(t) => t.note ?? "No note"}
           renderDate={(t) => new Date(t.created_at).toLocaleDateString()}
-          onClick={(trinket) => console.log("Clicked", trinket)}
+          focused={currentIndex === idx}
         />
       ))}
     </SpinningCarousel>

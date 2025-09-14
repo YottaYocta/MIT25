@@ -9,6 +9,7 @@ interface RandomTrinketCardProps {
   renderDate?: (trinket: Trinket) => string;
   renderSubtitle?: (trinket: Trinket) => string;
   onClick?: (trinket: Trinket) => void;
+  focused?: boolean;
 }
 
 const RandomTrinketCard: React.FC<RandomTrinketCardProps> = ({
@@ -16,6 +17,7 @@ const RandomTrinketCard: React.FC<RandomTrinketCardProps> = ({
   renderDate = (t) => new Date(t.created_at).toLocaleDateString(),
   renderSubtitle = (t) => t.note || "No note",
   onClick,
+  focused,
 }) => {
   const [randomTrinket, setRandomTrinket] = useState<Trinket | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -60,7 +62,7 @@ const RandomTrinketCard: React.FC<RandomTrinketCardProps> = ({
       date={renderDate(randomTrinket)}
       imageUrl={imageUrl}
       handleClick={() => onClick?.(randomTrinket)}
-      focused
+      focused={focused}
     />
   );
 };
