@@ -15,7 +15,7 @@ export async function GET(_req: Request, ctx: Params) {
   // First verify the trinket exists and get the file paths
   const { data: trinket, error: trinketError } = await supabase
     .from("trinkets")
-    .select("image_path, model_path")
+    .select("image_path, model_path, nano_image_path")
     .eq("id", id)
     .maybeSingle();
 
@@ -50,6 +50,15 @@ export async function GET(_req: Request, ctx: Params) {
     else if (ext.endsWith('.gltf')) contentType = "model/gltf+json";
     else if (ext.endsWith('.obj')) contentType = "application/octet-stream"; // OBJ files
     else if (ext.endsWith('.fbx')) contentType = "application/octet-stream"; // FBX files
+  } else if (filename === "nano" && trinket.nano_image_path) {
+    filePath = trinket.nano_image_path;
+    fileName = trinket.nano_image_path.split('/').pop() || 'nano';
+
+    const ext = trinket.nano_image_path.toLowerCase();
+    if (ext.endsWith('.png')) contentType = "image/png";
+    else if (ext.endsWith('.jpg') || ext.endsWith('.jpeg')) contentType = "image/jpeg";
+    else if (ext.endsWith('.webp')) contentType = "image/webp";
+    else if (ext.endsWith('.gif')) contentType = "image/gif";
   }
 
   if (!filePath) {

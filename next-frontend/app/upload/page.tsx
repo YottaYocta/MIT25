@@ -1,15 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import FloatingInput from "@/components/Input";
 import { convertToPng } from "@/lib/convertToPng";
 
 export default function UploadPage() {
   const router = useRouter();
-  const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
   const [globalError, setGlobalError] = useState<string | null>(null);
@@ -22,18 +22,60 @@ export default function UploadPage() {
         owner_id: string;
         image_path: string;
         model_path: string | null;
+        nano_image_path: string | null;
         title: string | null;
         note: string | null;
       } & Record<string, unknown>)
     | null
   >(null);
+
   const [genStatus, setGenStatus] = useState<
     "idle" | "pending" | "success" | "error"
   >("idle");
   const [genError, setGenError] = useState<string | null>(null);
 
+  const [collections, setCollections] = useState<Array<{ id: string; name: string }>>([]);
+  const [selectedCollectionId, setSelectedCollectionId] = useState<string>("");
+  const [newCollectionName, setNewCollectionName] = useState<string>("");
+  const [isCreatingCollection, setIsCreatingCollection] = useState<boolean>(false);
+
+  useEffect(() => {
+    const loadCollections = async () => {
+      try {
+        const res = await fetch("/api/collections", { credentials: "include" });
+        if (!res.ok) return; // silently ignore
+        const data: Array<{ id: string; name: string }> = await res.json();
+        setCollections(data);
+      } catch {
+        // ignore
+      }
+    };
+    void loadCollections();
+  }, []);
+
+  const createCollection = useCallback(async () => {
+    if (!newCollectionName.trim()) return;
+    setIsCreatingCollection(true);
+    try {
+      const res = await fetch("/api/collections", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newCollectionName.trim() }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to create collection");
+      setCollections(prev => [json, ...prev]);
+      setSelectedCollectionId(json.id as string);
+      setNewCollectionName("");
+    } catch (e) {
+      setGlobalError(e instanceof Error ? e.message : "Failed to create collection");
+    } finally {
+      setIsCreatingCollection(false);
+    }
+  }, [newCollectionName]);
+
   const readFileAsBase64 = useCallback(async (f: File): Promise<string> => {
-    // Returns base64 without data URL prefix
     const dataUrl: string = await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result as string);
@@ -53,23 +95,33 @@ export default function UploadPage() {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ trinketId: createdTrinketId, imageBase64: base64 }),
+          body: JSON.stringify({
+            trinketId: createdTrinketId,
+            imageBase64: base64,
+            save_preprocessed_image: true,
+          }),
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || "Generation failed");
         setGenStatus("success");
         setTrinket((prev) =>
-          prev ? { ...prev, model_path: json.model_path ?? prev.model_path } : prev,
+          prev
+            ? {
+                ...prev,
+                model_path: json.model_path ?? prev.model_path,
+                nano_image_path: json.nano_image_path ?? prev.nano_image_path,
+              }
+            : prev
         );
       } catch (err) {
         setGenStatus("error");
         setGenError(err instanceof Error ? err.message : "Generation failed");
       }
     },
-    [],
+    []
   );
 
-  const onStart = async () => {
+  const onStart = async (file: File) => {
     setGlobalError(null);
     setIsUploading(true);
     try {
@@ -83,6 +135,7 @@ export default function UploadPage() {
 
       const form = new FormData();
       form.append("file", pngFile);
+      if (selectedCollectionId) form.append("collection_id", selectedCollectionId);
 
       const uploadRes = await fetch("/api/upload", {
         method: "POST",
@@ -90,8 +143,7 @@ export default function UploadPage() {
         body: form,
       });
       const trinketJson = await uploadRes.json();
-      if (!uploadRes.ok)
-        throw new Error(trinketJson.error || "Upload failed");
+      if (!uploadRes.ok) throw new Error(trinketJson.error || "Upload failed");
 
       setTrinket(trinketJson);
       setStage("details");
@@ -117,6 +169,7 @@ export default function UploadPage() {
         body: JSON.stringify({
           title: title || null,
           note: note || null,
+          collection_id: selectedCollectionId || null,
         }),
       });
       const json = await res.json();
@@ -124,19 +177,28 @@ export default function UploadPage() {
       setTrinket(json);
     } catch (err) {
       setGlobalError(
-        err instanceof Error ? err.message : "Failed to save details",
+        err instanceof Error ? err.message : "Failed to save details"
       );
     } finally {
       setIsSavingDetails(false);
     }
   };
 
-  const canFinish = useMemo(() => genStatus === "success", [genStatus]);
+  const canFinish = genStatus === "success";
 
   return (
     <main className="min-h-svh flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         <h1 className="text-2xl font-semibold mb-4">Upload image</h1>
+
+        {/* Loading Indicator */}
+        {isUploading && (
+          <div className="flex justify-center items-center space-x-2 mb-4">
+            <div className="w-6 h-6 border-4 border-t-4 border-blue-500 border-solid rounded-full animate-spin"></div>
+            <span>Uploading...</span>
+          </div>
+        )}
+
         {stage === "select" && (
           <div className="flex flex-col gap-4">
             <div className="grid gap-2">
@@ -146,46 +208,106 @@ export default function UploadPage() {
                 type="file"
                 accept="image/*,.heic,.heif"
                 capture="environment"
-                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void onStart(f);
+                }}
               />
             </div>
             {globalError && (
               <p className="text-sm text-red-500">{globalError}</p>
             )}
-            <Button onClick={onStart} disabled={isUploading}>
-              {isUploading ? "Uploading..." : "Continue"}
-            </Button>
           </div>
         )}
 
         {stage === "details" && trinket && (
           <div className="flex flex-col gap-4">
-            <div className="rounded border p-3">
-              <p className="text-sm">Image uploaded.</p>
-              <p className="text-xs break-all text-muted-foreground">
-                {trinket.image_path}
-              </p>
+            <div className="rounded border p-3 space-y-2">
+              <div>
+                <p className="text-sm font-medium">Image uploaded</p>
+                <p className="text-xs break-all text-muted-foreground">
+                  {trinket.image_path}
+                </p>
+              </div>
+              {genStatus === "success" && trinket.model_path && (
+                <div>
+                  <p className="text-sm font-medium text-green-600">
+                    Model generated
+                  </p>
+                  <p className="text-xs break-all text-muted-foreground">
+                    {trinket.model_path}
+                  </p>
+                </div>
+              )}
+              {genStatus === "success" && trinket.nano_image_path && (
+                <div>
+                  <p className="text-sm font-medium text-green-600">
+                    Nano image uploaded
+                  </p>
+                  <p className="text-xs break-all text-muted-foreground">
+                    {trinket.nano_image_path}
+                  </p>
+                </div>
+              )}
+              {genStatus === "pending" && (
+                <p className="text-sm text-blue-600">Generating model...</p>
+              )}
+              {genStatus === "error" && genError && (
+                <div className="text-sm text-red-600">
+                  {genError.includes("3D generation service") ? (
+                    <div className="space-y-1">
+                      <p className="font-medium">Service Unavailable</p>
+                      <p className="text-xs">{genError}</p>
+                    </div>
+                  ) : (
+                    <p>Generation error: {genError}</p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="title">Title (optional)</Label>
-              <Input
-                id="title"
+              <Label htmlFor="collection-details">Collection (optional)</Label>
+              <select
+                id="collection-details"
+                className="border rounded h-9 px-3 bg-background"
+                value={selectedCollectionId}
+                onChange={(e) => setSelectedCollectionId(e.target.value)}
+              >
+                <option value="">No collection</option>
+                {collections.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="new-collection-details">Create new collection</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="new-collection-details"
+                  value={newCollectionName}
+                  onChange={(e) => setNewCollectionName(e.target.value)}
+                  placeholder="Collection name"
+                />
+                <Button onClick={createCollection} disabled={isCreatingCollection || !newCollectionName.trim()}>
+                  {isCreatingCollection ? "Creating..." : "Create"}
+                </Button>
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <FloatingInput
+                label="Title (optional)"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(value) => setTitle(value)}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="note">Note (optional)</Label>
-              <Input
-                id="note"
+              <FloatingInput
+                label="Note (optional)"
                 value={note}
-                onChange={(e) => setNote(e.target.value)}
+                onChange={(value) => setNote(value)}
               />
             </div>
-            {globalError && (
-              <p className="text-sm text-red-500">{globalError}</p>
-            )}
 
             <div className="flex gap-2">
               <Button onClick={onSaveDetails} disabled={isSavingDetails}>
@@ -204,27 +326,10 @@ export default function UploadPage() {
               </Button>
             </div>
 
-            <div className="rounded border p-3">
-              {genStatus === "pending" && (
-                <p className="text-sm">Generating model...</p>
-              )}
-              {genStatus === "success" && (
-                <div className="text-sm">
-                  <p>Model generated.</p>
-                  <p className="text-xs break-all text-muted-foreground">
-                    {trinket.model_path}
-                  </p>
-                </div>
-              )}
-              {genStatus === "error" && (
-                <p className="text-sm text-red-500">{genError}</p>
-              )}
-            </div>
+            
           </div>
         )}
       </div>
     </main>
   );
 }
-
-

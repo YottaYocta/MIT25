@@ -9,6 +9,9 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        title: ["Albert Sans", "sans-serif"], // Replace 'Your Custom Font' with the font-family name defined in your CSS
+      },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",

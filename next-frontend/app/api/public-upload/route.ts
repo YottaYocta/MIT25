@@ -20,8 +20,8 @@ export async function OPTIONS() {
 
 export async function POST(req: Request) {
   // Two input formats supported:
-  // - multipart/form-data: fields user_id (string), file (File), title (opt), note (opt)
-  // - application/json: { user_id: string, image_base64: string, title?: string, note?: string }
+  // - multipart/form-data: fields user_id (string), file (File), title (opt), note (opt), collection_id (opt)
+  // - application/json: { user_id: string, image_base64: string | image: string, title?: string, note?: string, collection_id?: string }
   const contentType = req.headers.get("content-type") || "";
   const fixedUserId = process.env.PUBLIC_UPLOAD_FIXED_USER_ID || null;
 
@@ -30,6 +30,7 @@ export async function POST(req: Request) {
     let userId: string | null = null;
     let title: string | null = null;
     let note: string | null = null;
+    let collection_id: string | null = null;
     let file: Blob | File | null = null;
     let inferredMime: string | null = null;
     let inferredExt: string | null = null;
@@ -39,6 +40,8 @@ export async function POST(req: Request) {
       userId = (form.get("user_id") as string) || null;
       title = ((form.get("title") as string) || null) as string | null;
       note = ((form.get("note") as string) || null) as string | null;
+      const cid = (form.get("collection_id") as string) || null;
+      collection_id = cid && cid.length > 0 ? cid : null;
       const f = form.get("file");
       if (f instanceof File) {
         file = f;
@@ -49,6 +52,7 @@ export async function POST(req: Request) {
       userId = body.user_id ?? null;
       title = body.title ?? null;
       note = body.note ?? null;
+      collection_id = body.collection_id ?? null;
       // Support both legacy key image_base64 and new key image
       const provided =
         (typeof body.image_base64 === "string" && body.image_base64.length > 0)
@@ -93,7 +97,7 @@ export async function POST(req: Request) {
     const { error: uploadError } = await supabase.storage
       .from("trinkets")
       .upload(storagePath, file, {
-        contentType: file.type || "image/jpeg",
+        contentType: (file as Blob).type || "image/jpeg",
         upsert: false,
       });
     if (uploadError) {
@@ -111,6 +115,7 @@ export async function POST(req: Request) {
         image_path: storagePath,
         model_path: "",
         visibility: "public",
+        collection_id,
       })
       .select("*")
       .single();

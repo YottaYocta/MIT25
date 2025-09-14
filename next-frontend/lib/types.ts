@@ -1,6 +1,7 @@
 export interface Trinket {
   id: string;
   owner_id: string;
+  collection_id?: string | null;
   title: string;
   note: string;
   image_path: string;
@@ -10,4 +11,7 @@ export interface Trinket {
   created_at: string;
   image_url: string;
   model_url: string;
+  // Optional nano image support
+  nano_image_path?: string;
+  nano_url?: string;
 }
