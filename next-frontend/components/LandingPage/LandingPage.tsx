@@ -116,23 +116,32 @@ const LandingPage: React.FC = () => {
             />
           </div>
 
-          {/* Subtitle with opaque background */}
-          <div className="bg-white/90 rounded-2xl px-8 py-2 border border-gray-200/50 text-center max-w-md shadow-lg">
-            <h2 className="text-lg md:text-xl font-light text-gray-800 tracking-wide">
+          {/* Subtitle with clean glass effect */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl px-8 py-3 border border-white/20 text-center max-w-md shadow-lg">
+            <h2 className="text-lg md:text-xl font-medium text-gray-800 tracking-wide">
               Collect your world...
             </h2>
           </div>
 
-          {/* Sign In button */}
-          <div>
+          {/* Action buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 items-center">
             <Button
               variant="glass-primary"
               size="xl"
-              className="text-xl font-bold shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 px-12 bg-blue-600/40 hover:bg-blue-600/50"
+              className="text-lg font-semibold shadow-xl hover:shadow-blue-500/30 transition-all duration-300 px-8 py-3 bg-blue-600/30 hover:bg-blue-600/40 backdrop-blur-sm border border-blue-400/20 hover:scale-105"
               onClick={() => router.push("/login")}
             >
               Sign In
             </Button>
+            
+            <a
+              href="https://discord.gg/6MfbJqCMA8"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center text-lg font-semibold px-8 py-3 rounded-full shadow-xl hover:shadow-purple-500/30 transition-all duration-300 bg-purple-600/30 hover:bg-purple-600/40 backdrop-blur-sm border border-purple-400/20 hover:scale-105"
+            >
+              Join our Discord
+            </a>
           </div>
         </div>
 
@@ -264,23 +273,32 @@ const LandingPage: React.FC = () => {
           />
         </div>
 
-        {/* Subtitle with opaque background */}
-        <div className="bg-white/90 rounded-2xl px-8 py-2 border border-gray-200/50 text-center max-w-md shadow-lg">
-          <h2 className="text-lg md:text-xl font-light text-gray-800 tracking-wide">
+        {/* Subtitle with clean glass effect */}
+        <div className="bg-white/10 backdrop-blur-sm rounded-2xl px-8 py-3 border border-white/20 text-center max-w-md shadow-lg">
+          <h2 className="text-lg md:text-xl font-medium text-gray-800 tracking-wide">
             Collect your world...
           </h2>
         </div>
 
-        {/* Sign In button */}
-        <div>
+        {/* Action buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
           <Button
             variant="glass-primary"
             size="xl"
-            className="text-xl font-bold shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 px-12 bg-blue-600/40 hover:bg-blue-600/50"
+            className="text-lg font-semibold shadow-xl hover:shadow-blue-500/30 transition-all duration-300 px-8 py-3 bg-blue-600/30 hover:bg-blue-600/40 backdrop-blur-sm border border-blue-400/20 hover:scale-105"
             onClick={() => router.push("/login")}
           >
             Sign In
           </Button>
+          
+          <a
+            href="#" // Replace with actual Discord server link
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center text-lg font-semibold px-8 py-3 rounded-full shadow-xl hover:shadow-purple-500/30 transition-all duration-300 bg-purple-600/30 hover:bg-purple-600/40 backdrop-blur-sm border border-purple-400/20 hover:scale-105"
+          >
+            Join our Discord!
+          </a>
         </div>
       </div>
 

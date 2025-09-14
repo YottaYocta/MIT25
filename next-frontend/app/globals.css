@@ -55,3 +55,44 @@
     --chart-5: 340 75% 55%;
   }
 }
+
+/* Scrolling column animations */
+@keyframes scroll-up {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes scroll-down {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.scrolling-column {
+  animation: scroll-up 30s linear infinite;
+}
+
+.scrolling-column-reverse {
+  animation: scroll-down 30s linear infinite;
+}
+
+/* Pause animation on hover for better UX */
+.scrolling-column:hover,
+.scrolling-column-reverse:hover {
+  animation-play-state: paused;
+}
+
+/* Ensure smooth infinite scrolling with no visible reset */
+.scrolling-column,
+.scrolling-column-reverse {
+  will-change: transform;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
