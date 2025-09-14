@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import ModelCard from "./ModelCard";
 import { Trinket } from "@/lib/types";
 
@@ -21,6 +22,7 @@ const RandomTrinketCard: React.FC<RandomTrinketCardProps> = ({
 }) => {
   const [randomTrinket, setRandomTrinket] = useState<Trinket | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (!trinkets.length) return;
@@ -64,13 +66,22 @@ const RandomTrinketCard: React.FC<RandomTrinketCardProps> = ({
 
   if (!randomTrinket || !imageUrl) return null;
 
+  const handleClick = () => {
+    // Call the custom onClick if provided (for existing functionality)
+    if (onClick) {
+      onClick(randomTrinket);
+    }
+    // Navigate to the trinket detail page
+    router.push(`/trinkets/${randomTrinket.id}`);
+  };
+
   return (
     <ModelCard
       title={randomTrinket.title}
       subtitle={renderSubtitle(randomTrinket)}
       date={renderDate(randomTrinket)}
       imageUrl={imageUrl}
-      handleClick={() => onClick?.(randomTrinket)}
+      handleClick={handleClick}
       focused={focused}
     />
   );

@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import GlassmorphicPedestal from "./GlassmorphicPedestal";
 import { Trinket } from "@/lib/types";
 
@@ -11,6 +12,7 @@ interface Props {
 
 export default function TrinketPedestal({ trinket, focused, onClick }: Props) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     let isMounted = true;
@@ -56,11 +58,20 @@ export default function TrinketPedestal({ trinket, focused, onClick }: Props) {
     };
   }, [trinket]);
 
+  const handleClick = () => {
+    // Call the custom onClick if provided (for existing functionality)
+    if (onClick) {
+      onClick();
+    }
+    // Navigate to the trinket detail page
+    router.push(`/trinkets/${trinket.id}`);
+  };
+
   return (
     <GlassmorphicPedestal
       imageUrl={imageUrl || "/placeholder.png"}
       focused={focused}
-      handleClick={onClick}
+      handleClick={handleClick}
     />
   );
 }

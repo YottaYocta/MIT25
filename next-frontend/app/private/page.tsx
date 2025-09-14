@@ -4,7 +4,7 @@ import { LoginForm } from "@/components/login-form";
 import { RecentTrinkets } from "@/components/RecentTrinkets";
 import { Collections } from "@/components/Collections";
 import { Albert_Sans } from "next/font/google";
-import { Nav } from "@/components/Nav";
+import { ConditionalNav } from "@/components/ConditionalNav";
 
 const albertSans = Albert_Sans({
   variable: "--font-albert-sans",
@@ -52,7 +52,7 @@ export default async function Home() {
           <RecentTrinkets />
         </div>
       </div>
-      <Nav></Nav>
+      <ConditionalNav />
     </main>
   );
 }

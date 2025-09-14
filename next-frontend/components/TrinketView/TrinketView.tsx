@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Environment } from '@react-three/drei';
 import { TrinketViewProps } from './types';
@@ -87,12 +87,24 @@ export function TrinketView({
         <Room />
         <GreekColumns positions={[columnPosition]} />
 
-        <Trinket
-          trinket={processedTrinket}
-          position={trinketPosition}
-          radius={0.3}
-          isFocused={true}
-        />
+        <Suspense fallback={
+          <mesh position={trinketPosition}>
+            <boxGeometry args={[0.6, 0.6, 0.6]} />
+            <meshBasicMaterial 
+              color="#666666" 
+              wireframe 
+              transparent 
+              opacity={0.5}
+            />
+          </mesh>
+        }>
+          <Trinket
+            trinket={processedTrinket}
+            position={trinketPosition}
+            radius={0.3}
+            isFocused={true}
+          />
+        </Suspense>
 
         <Environment preset="city" />
       </Canvas>

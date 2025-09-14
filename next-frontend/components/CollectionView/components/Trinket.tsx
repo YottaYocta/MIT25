@@ -5,12 +5,19 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { ProcessedTrinket } from '../types';
+import { ModelErrorBoundary } from '../../ModelErrorBoundary';
 
 interface TrinketProps {
   trinket: ProcessedTrinket;
   position?: [number, number, number];
   radius?: number;
   isFocused?: boolean;
+}
+
+// Component for loading GLTF models
+function GLTFModel({ modelPath }: { modelPath: string }) {
+  const { scene } = useGLTF(modelPath);
+  return <primitive object={scene.clone()} />;
 }
 
 export function Trinket({
@@ -26,7 +33,6 @@ export function Trinket({
   const bobbingOffset = useRef<number>(0);
 
   const { camera } = useThree();
-  const { scene } = useGLTF(trinket.modelPath);
 
   targetPosition.current.set(...position);
 
@@ -108,7 +114,32 @@ export function Trinket({
         </>
       )}
 
-      <primitive object={scene.clone()} />
+      {trinket.modelPath ? (
+        <ModelErrorBoundary
+          fallback={
+            <mesh castShadow receiveShadow>
+              <boxGeometry args={[1, 1, 1]} />
+              <meshStandardMaterial 
+                color="#ff9999" 
+                transparent 
+                opacity={0.7}
+              />
+            </mesh>
+          }
+        >
+          <GLTFModel modelPath={trinket.modelPath} />
+        </ModelErrorBoundary>
+      ) : (
+        // Fallback: Display a placeholder cube when no model path
+        <mesh castShadow receiveShadow>
+          <boxGeometry args={[1, 1, 1]} />
+          <meshStandardMaterial 
+            color="#cccccc" 
+            transparent 
+            opacity={0.7}
+          />
+        </mesh>
+      )}
     </group>
   );
 }
