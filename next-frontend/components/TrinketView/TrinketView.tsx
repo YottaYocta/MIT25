@@ -74,7 +74,6 @@ export function TrinketView({
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (!enableTouch) return;
     if (e.touches.length !== 1) return;
-    e.preventDefault();
     const touch = e.touches[0];
     startDrag(touch.clientX);
   }, [enableTouch, startDrag]);
@@ -82,14 +81,12 @@ export function TrinketView({
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (!enableTouch) return;
     if (!isDragging) return;
-    e.preventDefault();
     const touch = e.touches[0];
     updateDrag(touch.clientX);
   }, [enableTouch, isDragging, updateDrag]);
 
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+  const handleTouchEnd = useCallback(() => {
     if (!enableTouch) return;
-    e.preventDefault();
     endDrag();
   }, [enableTouch, endDrag]);
 
@@ -132,7 +129,7 @@ export function TrinketView({
     <div
       ref={containerRef}
       className={`w-full h-screen touch-manipulation ${className}`}
-      style={{ backgroundColor }}
+      style={{ backgroundColor, touchAction: 'none' }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
