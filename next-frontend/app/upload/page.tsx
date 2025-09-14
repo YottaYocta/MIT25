@@ -1,15 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import CameraUpload from "@/components/CameraUpload";
+import FloatingInput from "@/components/Input";
 import { convertToPng } from "@/lib/convertToPng";
 
 export default function UploadPage() {
   const router = useRouter();
-  const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
   const [globalError, setGlobalError] = useState<string | null>(null);
@@ -27,13 +26,13 @@ export default function UploadPage() {
       } & Record<string, unknown>)
     | null
   >(null);
+
   const [genStatus, setGenStatus] = useState<
     "idle" | "pending" | "success" | "error"
   >("idle");
   const [genError, setGenError] = useState<string | null>(null);
 
   const readFileAsBase64 = useCallback(async (f: File): Promise<string> => {
-    // Returns base64 without data URL prefix
     const dataUrl: string = await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result as string);
@@ -53,23 +52,28 @@ export default function UploadPage() {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ trinketId: createdTrinketId, imageBase64: base64 }),
+          body: JSON.stringify({
+            trinketId: createdTrinketId,
+            imageBase64: base64,
+          }),
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || "Generation failed");
         setGenStatus("success");
         setTrinket((prev) =>
-          prev ? { ...prev, model_path: json.model_path ?? prev.model_path } : prev,
+          prev
+            ? { ...prev, model_path: json.model_path ?? prev.model_path }
+            : prev
         );
       } catch (err) {
         setGenStatus("error");
         setGenError(err instanceof Error ? err.message : "Generation failed");
       }
     },
-    [],
+    []
   );
 
-  const onStart = async () => {
+  const onStart = async (file: File) => {
     setGlobalError(null);
     setIsUploading(true);
     try {
@@ -90,8 +94,7 @@ export default function UploadPage() {
         body: form,
       });
       const trinketJson = await uploadRes.json();
-      if (!uploadRes.ok)
-        throw new Error(trinketJson.error || "Upload failed");
+      if (!uploadRes.ok) throw new Error(trinketJson.error || "Upload failed");
 
       setTrinket(trinketJson);
       setStage("details");
@@ -124,37 +127,34 @@ export default function UploadPage() {
       setTrinket(json);
     } catch (err) {
       setGlobalError(
-        err instanceof Error ? err.message : "Failed to save details",
+        err instanceof Error ? err.message : "Failed to save details"
       );
     } finally {
       setIsSavingDetails(false);
     }
   };
 
-  const canFinish = useMemo(() => genStatus === "success", [genStatus]);
+  const canFinish = genStatus === "success";
 
   return (
     <main className="min-h-svh flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         <h1 className="text-2xl font-semibold mb-4">Upload image</h1>
+
+        {/* Loading Indicator */}
+        {isUploading && (
+          <div className="flex justify-center items-center space-x-2 mb-4">
+            <div className="w-6 h-6 border-4 border-t-4 border-blue-500 border-solid rounded-full animate-spin"></div>
+            <span>Uploading...</span>
+          </div>
+        )}
+
         {stage === "select" && (
           <div className="flex flex-col gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="file">Image</Label>
-              <Input
-                id="file"
-                type="file"
-                accept="image/*,.heic,.heif"
-                capture="environment"
-                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              />
-            </div>
+            <CameraUpload handleUpload={onStart} />
             {globalError && (
               <p className="text-sm text-red-500">{globalError}</p>
             )}
-            <Button onClick={onStart} disabled={isUploading}>
-              {isUploading ? "Uploading..." : "Continue"}
-            </Button>
           </div>
         )}
 
@@ -168,19 +168,17 @@ export default function UploadPage() {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="title">Title (optional)</Label>
-              <Input
-                id="title"
+              <FloatingInput
+                label="Title (optional)"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(value) => setTitle(value)}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="note">Note (optional)</Label>
-              <Input
-                id="note"
+              <FloatingInput
+                label="Note (optional)"
                 value={note}
-                onChange={(e) => setNote(e.target.value)}
+                onChange={(value) => setNote(value)}
               />
             </div>
             {globalError && (
@@ -226,5 +224,3 @@ export default function UploadPage() {
     </main>
   );
 }
-
-
