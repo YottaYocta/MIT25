@@ -23,14 +23,16 @@ export async function POST(req: Request) {
   // - multipart/form-data: fields user_id (string), file (File), title (opt), note (opt)
   // - application/json: { user_id: string, image_base64: string, title?: string, note?: string }
   const contentType = req.headers.get("content-type") || "";
-  const supabase = createAdminClient();
   const fixedUserId = process.env.PUBLIC_UPLOAD_FIXED_USER_ID || null;
 
   try {
+    const supabase = createAdminClient();
     let userId: string | null = null;
     let title: string | null = null;
     let note: string | null = null;
-    let file: File | null = null;
+    let file: Blob | File | null = null;
+    let inferredMime: string | null = null;
+    let inferredExt: string | null = null;
 
     if (contentType.includes("multipart/form-data")) {
       const form = await req.formData();
@@ -40,6 +42,7 @@ export async function POST(req: Request) {
       const f = form.get("file");
       if (f instanceof File) {
         file = f;
+        inferredMime = f.type || null;
       }
     } else if (contentType.includes("application/json")) {
       const body = await req.json();
@@ -47,11 +50,16 @@ export async function POST(req: Request) {
       title = body.title ?? null;
       note = body.note ?? null;
       if (typeof body.image_base64 === "string" && body.image_base64.length > 0) {
-        const commaIdx = body.image_base64.indexOf(",");
-        const base64 =
-          commaIdx >= 0 ? body.image_base64.slice(commaIdx + 1) : body.image_base64;
+        const b64Str: string = body.image_base64;
+        const commaIdx = b64Str.indexOf(",");
+        const header = commaIdx >= 0 ? b64Str.slice(0, commaIdx) : "";
+        const base64 = commaIdx >= 0 ? b64Str.slice(commaIdx + 1) : b64Str;
+        const mimeMatch = header.match(/^data:([^;]+);base64$/i);
+        inferredMime = mimeMatch ? mimeMatch[1] : "image/jpeg";
         const binary = Buffer.from(base64, "base64");
-        file = new File([binary], "upload.jpg", { type: "image/jpeg" });
+        file = new Blob([binary], { type: inferredMime });
+        // basic extension inference
+        inferredExt = inferredMime?.split("/")[1] || null;
       }
     }
 
@@ -69,7 +77,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const fileExt = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const fileExt = (file instanceof File && file.name.includes("."))
+      ? file.name.split(".").pop()?.toLowerCase() || "jpg"
+      : (inferredExt || (inferredMime === "image/png" ? "png" : "jpg"));
     const fileName = `${crypto.randomUUID()}.${fileExt}`;
     const storagePath = `images/${userId}/${fileName}`;
 
@@ -111,17 +121,13 @@ export async function POST(req: Request) {
 
     return cors(
       NextResponse.json(
-        { ...record, image_url: publicUrlData?.publicUrl },
+        { ...record, image_path: storagePath, image_url: publicUrlData?.publicUrl },
         { status: 201 },
       ),
     );
   } catch (err) {
-    return cors(
-      NextResponse.json(
-        { error: (err as Error).message || "Unexpected error" },
-        { status: 500 },
-      ),
-    );
+    const message = (err as Error)?.message || "Unexpected error";
+    return cors(NextResponse.json({ error: message }, { status: 500 }));
   }
 }
 
