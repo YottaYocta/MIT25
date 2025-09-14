@@ -7,6 +7,8 @@ import { ImageViewer } from "@/components/image-viewer";
 import { RecentTrinkets } from "@/components/RecentTrinkets";
 import { Collections } from "@/components/Collections";
 import { Albert_Sans } from "next/font/google";
+import Button from "@/components/Button";
+import { PlusIcon } from "lucide-react";
 
 const albertSans = Albert_Sans({
   variable: "--font-albert-sans",
@@ -55,6 +57,44 @@ export default async function Home() {
           </h2>
           <RecentTrinkets></RecentTrinkets>
         </div>
+
+        <div className="fixed flex justify-center items-end gap-2 bottom-0 left-0 h-20 py-2 w-screen">
+          <svg
+            viewBox="0 0 462 90"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-screen h-auto fixed bottom-0 -z-10"
+          >
+            <path
+              d="M1 25.4997V88.9996H461V25.4997H280C270.5 25.4997 276.254 1.00023 260 1.00003H202C185.746 0.999987 192.5 25.4997 180 25.4997H1Z"
+              fill="url(#paint0_linear_131_15)"
+              stroke="#DEE4FF"
+            />
+            <defs>
+              <linearGradient
+                id="paint0_linear_131_15"
+                x1="231"
+                y1="1"
+                x2="231"
+                y2="88.9996"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop stop-color="white" />
+                <stop offset="1" stop-color="#E9ECFF" />
+              </linearGradient>
+            </defs>
+          </svg>
+
+          <Button className="h-8 w-32 justify-center">My Trinkets</Button>
+          <Link href={"/upload"}>
+            <Button className="w-16 h-16 rounded-full flex items-center justify-center">
+              <PlusIcon></PlusIcon>
+            </Button>
+          </Link>
+
+          <Button className="h-8 w-32 justify-center">Public</Button>
+        </div>
+
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold">Trinket</h1>
           <div className="flex items-center gap-3">
