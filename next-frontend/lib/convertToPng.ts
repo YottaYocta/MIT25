@@ -16,7 +16,7 @@ export type ConvertOptions = {
 
 export async function convertToPng(
   inputFile: File,
-  options?: ConvertOptions,
+  options?: ConvertOptions
 ): Promise<File> {
   const isHeic =
     /image\/hei[cf]/i.test(inputFile.type) ||
@@ -69,7 +69,6 @@ async function decodeToBitmap(blob: Blob): Promise<ImageBitmap> {
     try {
       // imageOrientation: from-image respects EXIF rotation where supported
       // (Some browsers ignore this option; harmless if so.)
-      // @ts-expect-error - option may not be in older TS lib
       return await createImageBitmap(blob, { imageOrientation: "from-image" });
     } catch {
       // fall through to HTMLImageElement
@@ -114,7 +113,7 @@ type ExportOptions = {
 
 async function drawToCanvasAndExport(
   source: ImageBitmap | HTMLImageElement,
-  opts: ExportOptions,
+  opts: ExportOptions
 ): Promise<Blob> {
   const srcWidth =
     (source as ImageBitmap).width ?? (source as HTMLImageElement).naturalWidth;
@@ -131,9 +130,11 @@ async function drawToCanvasAndExport(
   let blob: Blob | null = null;
 
   if ("OffscreenCanvas" in window) {
-    const OffscreenCanvasCtor = (window as unknown as Window & {
-      OffscreenCanvas: new (w: number, h: number) => OffscreenCanvas;
-    }).OffscreenCanvas;
+    const OffscreenCanvasCtor = (
+      window as unknown as Window & {
+        OffscreenCanvas: new (w: number, h: number) => OffscreenCanvas;
+      }
+    ).OffscreenCanvas;
     const off = new OffscreenCanvasCtor(width, height);
     const ctx = off.getContext("2d")!;
     ctx.drawImage(source as CanvasImageSource, 0, 0, width, height);
@@ -147,7 +148,7 @@ async function drawToCanvasAndExport(
     blob = await new Promise<Blob>((resolve, reject) =>
       canvas.toBlob(
         (b) => (b ? resolve(b) : reject(new Error("toBlob failed"))),
-        opts.type,
+        opts.type
       )
     );
   }
