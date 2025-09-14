@@ -31,7 +31,7 @@ export function LoginForm({
     setError(null);
 
     try {
-      const nextUrl = "/protected";
+      const nextUrl = "/";
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
