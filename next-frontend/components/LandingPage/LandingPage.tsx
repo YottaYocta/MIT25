@@ -1,36 +1,42 @@
-import React, { useState, useEffect } from 'react';
-import ScrollingColumn from './ScrollingColumn';
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import ScrollingColumn from "./ScrollingColumn";
 
 // Custom Button component
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'glass' | 'glass-primary' | 'default';
-  size?: 'sm' | 'xl' | 'default';
+  variant?: "glass" | "glass-primary" | "default";
+  size?: "sm" | "xl" | "default";
   children: React.ReactNode;
 }
 
-const Button: React.FC<ButtonProps> = ({ 
-  variant = 'default', 
-  size = 'default', 
-  className = '', 
-  children, 
-  ...props 
+const Button: React.FC<ButtonProps> = ({
+  variant = "default",
+  size = "default",
+  className = "",
+  children,
+  ...props
 }) => {
-  const baseClasses = 'inline-flex items-center justify-center font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background';
-  
+  const baseClasses =
+    "inline-flex items-center justify-center font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background";
+
   const variantClasses = {
-    default: 'bg-blue-600 text-white hover:bg-blue-700',
-    glass: 'glass-button bg-gray-900/20 text-gray-900 font-bold hover:bg-gray-900/30 hover:glow-strong active:scale-95',
-    'glass-primary': 'glass-button bg-blue-600/20 text-white font-bold hover:bg-blue-600/30 hover:glow-strong active:scale-95'
+    default: "bg-blue-600 text-white hover:bg-blue-700",
+    glass:
+      "glass-button bg-gray-900/20 text-gray-900 font-bold hover:bg-gray-900/30 hover:glow-strong active:scale-95",
+    "glass-primary":
+      "glass-button bg-blue-600/20 text-white font-bold hover:bg-blue-600/30 hover:glow-strong active:scale-95",
   };
-  
+
   const sizeClasses = {
-    default: 'h-10 py-2 px-4 rounded-full',
-    sm: 'h-9 px-3 text-sm rounded-full',
-    xl: 'h-14 px-10 text-lg rounded-full'
+    default: "h-10 py-2 px-4 rounded-full",
+    sm: "h-9 px-3 text-sm rounded-full",
+    xl: "h-14 px-10 text-lg rounded-full",
   };
-  
+
   return (
-    <button 
+    <button
       className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
       {...props}
     >
@@ -39,41 +45,48 @@ const Button: React.FC<ButtonProps> = ({
   );
 };
 // Using public images as strings
-const trinketLogo = '/trinket_logo.png';
+const trinketLogo = "/trinket_logo.png";
 
 const LandingPage: React.FC = () => {
+  const router = useRouter();
+
   // State for responsive column count
   const [numColumns, setNumColumns] = useState(8);
 
   // Images from public/images
   const imagesSet1 = [
-    '/images/badge.png',
-    '/images/matcha.png',
-    '/images/mentra.png',
-    '/images/sculpture.png',
-    '/images/throatmic.png'
+    "/images/badge.png",
+    "/images/matcha.png",
+    "/images/mentra.png",
+    "/images/sculpture.png",
+    "/images/throatmic.png",
   ];
 
   // Images from public/images2
   const imagesSet2 = [
-    '/images2/chill.png',
-    '/images2/liberty.png',
-    '/images2/oreo.png',
-    '/images2/peanutbutter.png',
-    '/images2/tokyo.png'
+    "/images2/chill.png",
+    "/images2/liberty.png",
+    "/images2/oreo.png",
+    "/images2/peanutbutter.png",
+    "/images2/tokyo.png",
   ];
 
   // Function to determine number of columns based on screen width
   const getColumnCount = (width: number) => {
-    if (width < 640) return 3;      // Mobile: 3 columns
-    if (width < 768) return 4;      // Large mobile: 4 columns
-    if (width < 1024) return 6;     // Tablet: 6 columns
-    if (width < 1280) return 8;     // Desktop: 8 columns
-    return 10;                      // Large desktop: 10 columns
+    if (width < 640) return 3; // Mobile: 3 columns
+    if (width < 768) return 4; // Large mobile: 4 columns
+    if (width < 1024) return 6; // Tablet: 6 columns
+    if (width < 1280) return 8; // Desktop: 8 columns
+    return 10; // Large desktop: 10 columns
   };
 
-  // Effect to handle responsive column count
+  // State for hydration-safe rendering
+  const [isClient, setIsClient] = useState(false);
+
+  // Effect to handle responsive column count and client-side hydration
   useEffect(() => {
+    setIsClient(true);
+
     const handleResize = () => {
       setNumColumns(getColumnCount(window.innerWidth));
     };
@@ -82,18 +95,77 @@ const LandingPage: React.FC = () => {
     handleResize();
 
     // Add event listener
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
 
     // Cleanup
-    return () => window.removeEventListener('resize', handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Helper function to create random arrangements from an image set
-  const createRandomArrangements = (imageSet: string[], numArrangements: number) => {
+  // Don't render background columns during SSR to prevent hydration mismatch
+  if (!isClient) {
+    return (
+      <div className="min-h-screen relative overflow-hidden">
+        {/* Main content - centered */}
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-8 space-y-6">
+          {/* Logo - Large and centered */}
+          <div className="flex justify-center">
+            <img
+              src={trinketLogo}
+              alt="Trinket"
+              className="h-48 md:h-56 lg:h-64 xl:h-72 drop-shadow-2xl object-contain max-w-full"
+            />
+          </div>
+
+          {/* Subtitle with opaque background */}
+          <div className="bg-white/90 rounded-2xl px-8 py-2 border border-gray-200/50 text-center max-w-md shadow-lg">
+            <h2 className="text-lg md:text-xl font-light text-gray-800 tracking-wide">
+              Collect your world...
+            </h2>
+          </div>
+
+          {/* Sign In button */}
+          <div>
+            <Button
+              variant="glass-primary"
+              size="xl"
+              className="text-xl font-bold shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 px-12 bg-blue-600/40 hover:bg-blue-600/50"
+              onClick={() => router.push("/login")}
+            >
+              Sign In
+            </Button>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <footer className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-10">
+          <p className="text-sm text-gray-600 bg-white/90 px-4 py-2 rounded-full shadow-lg">
+            Built for HackMIT 2025
+          </p>
+        </footer>
+      </div>
+    );
+  }
+
+  // Helper function to create deterministic arrangements from an image set
+  const createDeterministicArrangements = (
+    imageSet: string[],
+    numArrangements: number,
+    seed: number
+  ) => {
     const arrangements = [];
     for (let i = 0; i < numArrangements; i++) {
-      // Create a shuffled copy of the image set
-      const shuffled = [...imageSet].sort(() => Math.random() - 0.5);
+      // Create a deterministic shuffle using the seed and column index
+      const shuffled = [...imageSet];
+      for (let j = shuffled.length - 1; j > 0; j--) {
+        // Simple linear congruential generator for deterministic "random" numbers
+        const pseudoRandom =
+          ((seed + i * 31 + j * 17) * 1103515245 + 12345) % Math.pow(2, 31);
+        const randomIndex = pseudoRandom % (j + 1);
+        [shuffled[j], shuffled[randomIndex]] = [
+          shuffled[randomIndex],
+          shuffled[j],
+        ];
+      }
       // Take 3 images for each column arrangement
       arrangements.push(shuffled.slice(0, 3));
     }
@@ -102,15 +174,24 @@ const LandingPage: React.FC = () => {
 
   // Create alternating column arrangements based on responsive column count
   const allBackgroundImages = [];
+  const seed = 42; // Fixed seed for consistent results
 
   for (let i = 0; i < numColumns; i++) {
     if (i % 2 === 0) {
       // Even columns use imagesSet1
-      const arrangements = createRandomArrangements(imagesSet1, 1);
+      const arrangements = createDeterministicArrangements(
+        imagesSet1,
+        1,
+        seed + i
+      );
       allBackgroundImages.push(arrangements[0]);
     } else {
       // Odd columns use imagesSet2
-      const arrangements = createRandomArrangements(imagesSet2, 1);
+      const arrangements = createDeterministicArrangements(
+        imagesSet2,
+        1,
+        seed + i
+      );
       allBackgroundImages.push(arrangements[0]);
     }
   }
@@ -124,28 +205,33 @@ const LandingPage: React.FC = () => {
           const getColumnStyles = () => {
             if (numColumns <= 3) {
               return {
-                className: "w-20 sm:w-24 flex-shrink-0 transform rotate-12 opacity-20",
-                marginStyle: { marginX: '1rem' }
+                className:
+                  "w-20 sm:w-24 flex-shrink-0 transform rotate-12 opacity-20",
+                marginStyle: { marginX: "1rem" },
               };
             } else if (numColumns <= 4) {
               return {
-                className: "w-16 sm:w-20 flex-shrink-0 transform rotate-12 opacity-20",
-                marginStyle: { marginX: '0.75rem' }
+                className:
+                  "w-16 sm:w-20 flex-shrink-0 transform rotate-12 opacity-20",
+                marginStyle: { marginX: "0.75rem" },
               };
             } else if (numColumns <= 6) {
               return {
-                className: "w-14 sm:w-16 md:w-20 flex-shrink-0 transform rotate-12 opacity-20",
-                marginStyle: { marginX: '0.5rem' }
+                className:
+                  "w-14 sm:w-16 md:w-20 flex-shrink-0 transform rotate-12 opacity-20",
+                marginStyle: { marginX: "0.5rem" },
               };
             } else if (numColumns <= 8) {
               return {
-                className: "w-12 sm:w-14 md:w-16 lg:w-20 flex-shrink-0 transform rotate-12 opacity-20",
-                marginStyle: { marginX: '0.25rem' }
+                className:
+                  "w-12 sm:w-14 md:w-16 lg:w-20 flex-shrink-0 transform rotate-12 opacity-20",
+                marginStyle: { marginX: "0.25rem" },
               };
             } else {
               return {
-                className: "w-10 sm:w-12 md:w-14 lg:w-16 xl:w-18 flex-shrink-0 transform rotate-12 opacity-20",
-                marginStyle: { marginX: '0.125rem' }
+                className:
+                  "w-10 sm:w-12 md:w-14 lg:w-16 xl:w-18 flex-shrink-0 transform rotate-12 opacity-20",
+                marginStyle: { marginX: "0.125rem" },
               };
             }
           };
@@ -156,30 +242,15 @@ const LandingPage: React.FC = () => {
             <ScrollingColumn
               key={`${index}-${numColumns}`}
               images={images}
-              direction={index % 2 === 0 ? 'up' : 'down'}
+              direction={index % 2 === 0 ? "up" : "down"}
               className={className}
               style={{
-                marginLeft: index === 0 ? marginStyle.marginX : '0',
-                marginRight: marginStyle.marginX
+                marginLeft: index === 0 ? marginStyle.marginX : "0",
+                marginRight: marginStyle.marginX,
               }}
             />
           );
         })}
-      </div>
-
-      {/* Login button - top right */}
-      <div className="absolute top-6 right-6 z-10">
-        <Button 
-          variant="glass" 
-          size="default"
-          className="font-bold shadow-xl hover:shadow-gray-500/25 transition-all duration-300"
-          onClick={() => {
-            // Add login functionality here
-            console.log('Login clicked');
-          }}
-        >
-          Login
-        </Button>
       </div>
 
       {/* Main content - centered */}
@@ -193,32 +264,29 @@ const LandingPage: React.FC = () => {
           />
         </div>
 
-        {/* Thin glassmorphic card with tagline */}
-        <div className="glass rounded-2xl px-8 py-2 border border-gray-200/50 text-center max-w-md">
+        {/* Subtitle with opaque background */}
+        <div className="bg-white/90 rounded-2xl px-8 py-2 border border-gray-200/50 text-center max-w-md shadow-lg">
           <h2 className="text-lg md:text-xl font-light text-gray-800 tracking-wide">
             Collect your world...
           </h2>
         </div>
 
-        {/* Glassmorphic signup button */}
+        {/* Sign In button */}
         <div>
           <Button
             variant="glass-primary"
             size="xl"
             className="text-xl font-bold shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 px-12 bg-blue-600/40 hover:bg-blue-600/50"
-            onClick={() => {
-              // Add signup functionality here
-              console.log('Sign Up clicked');
-            }}
+            onClick={() => router.push("/login")}
           >
-            Sign Up Now
+            Sign In
           </Button>
         </div>
       </div>
 
       {/* Footer */}
       <footer className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-10">
-        <p className="text-sm text-gray-600 glass px-4 py-2 rounded-full">
+        <p className="text-sm text-gray-600 bg-white/90 px-4 py-2 rounded-full shadow-lg">
           Built for HackMIT 2025
         </p>
       </footer>

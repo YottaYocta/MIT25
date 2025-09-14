@@ -1,6 +1,6 @@
 // @/next-frontend/app/page.tsx
-import { redirect } from "next/navigation";
+import LandingPage from "@/components/LandingPage/LandingPage";
 
-export default async function Home() {
-  redirect("/public");
+export default function Home() {
+  return <LandingPage />;
 }
