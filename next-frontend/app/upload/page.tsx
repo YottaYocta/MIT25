@@ -22,6 +22,7 @@ export default function UploadPage() {
         owner_id: string;
         image_path: string;
         model_path: string | null;
+        nano_image_path: string | null;
         title: string | null;
         note: string | null;
       } & Record<string, unknown>)
@@ -53,13 +54,17 @@ export default function UploadPage() {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ trinketId: createdTrinketId, imageBase64: base64 }),
+          body: JSON.stringify({ trinketId: createdTrinketId, imageBase64: base64, save_preprocessed_image: true }),
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || "Generation failed");
         setGenStatus("success");
         setTrinket((prev) =>
-          prev ? { ...prev, model_path: json.model_path ?? prev.model_path } : prev,
+          prev ? { 
+            ...prev, 
+            model_path: json.model_path ?? prev.model_path,
+            nano_image_path: json.nano_image_path ?? prev.nano_image_path 
+          } : prev,
         );
       } catch (err) {
         setGenStatus("error");
@@ -160,11 +165,35 @@ export default function UploadPage() {
 
         {stage === "details" && trinket && (
           <div className="flex flex-col gap-4">
-            <div className="rounded border p-3">
-              <p className="text-sm">Image uploaded.</p>
-              <p className="text-xs break-all text-muted-foreground">
-                {trinket.image_path}
-              </p>
+            <div className="rounded border p-3 space-y-2">
+              <div>
+                <p className="text-sm font-medium">Image uploaded</p>
+                <p className="text-xs break-all text-muted-foreground">
+                  {trinket.image_path}
+                </p>
+              </div>
+              {genStatus === "success" && trinket.model_path && (
+                <div>
+                  <p className="text-sm font-medium text-green-600">Model generated</p>
+                  <p className="text-xs break-all text-muted-foreground">
+                    {trinket.model_path}
+                  </p>
+                </div>
+              )}
+              {genStatus === "success" && trinket.nano_image_path && (
+                <div>
+                  <p className="text-sm font-medium text-green-600">Nano image uploaded</p>
+                  <p className="text-xs break-all text-muted-foreground">
+                    {trinket.nano_image_path}
+                  </p>
+                </div>
+              )}
+              {genStatus === "pending" && (
+                <p className="text-sm text-blue-600">Generating model...</p>
+              )}
+              {genStatus === "error" && genError && (
+                <p className="text-sm text-red-600">Generation error: {genError}</p>
+              )}
             </div>
 
             <div className="grid gap-2">

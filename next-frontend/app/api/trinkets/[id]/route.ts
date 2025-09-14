@@ -28,6 +28,12 @@ export async function GET(_req: Request, ctx: Params) {
       .getPublicUrl(data.model_path);
     enhancedData.model_url = modelUrl.publicUrl;
   }
+  if (data.nano_image_path) {
+    const { data: nanoUrl } = supabase.storage
+      .from("trinkets")
+      .getPublicUrl(data.nano_image_path);
+    enhancedData.nano_url = nanoUrl.publicUrl;
+  }
 
   return NextResponse.json(enhancedData);
 }
