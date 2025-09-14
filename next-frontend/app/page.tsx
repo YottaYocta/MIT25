@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { LoginForm } from "@/components/login-form";
 import { ensureAndFetchCurrentProfile } from "@/lib/profiles";
 import { LogoutButton } from "@/components/logout-button";
+import { TrinketsActions } from "@/components/trinkets-actions";
+import Link from "next/link";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -14,7 +16,9 @@ export default async function Home() {
         <div className="w-full max-w-sm">
           <div className="mb-6">
             <h1 className="text-2xl font-semibold">Sign in to Trinket</h1>
-            <p className="text-sm text-muted-foreground">We will email you a magic link</p>
+            <p className="text-sm text-muted-foreground">
+              We will email you a magic link
+            </p>
           </div>
           <LoginForm />
         </div>
@@ -24,12 +28,26 @@ export default async function Home() {
 
   const profile = await ensureAndFetchCurrentProfile();
 
+  const { data: publicUrlData } = supabase.storage
+    .from("trinkets")
+    .getPublicUrl("images/test_image.png");
+
+  const url = publicUrlData.publicUrl;
+
   return (
     <main className="min-h-svh flex items-center justify-center p-6">
       <div className="w-full max-w-2xl flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold">Trinket</h1>
-          <LogoutButton />
+          <div className="flex items-center gap-3">
+            <Link
+              href="/upload"
+              className="text-sm underline underline-offset-4"
+            >
+              Upload image
+            </Link>
+            <LogoutButton />
+          </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -44,6 +62,14 @@ export default async function Home() {
               {JSON.stringify(profile, null, 2)}
             </pre>
           </div>
+        </div>
+        <div>
+          <h2 className="font-bold mb-2">Trinkets API</h2>
+          <TrinketsActions />
+        </div>
+        <div>
+          <h2 className="font-bold mb-2">Some Example Images</h2>
+            <img src={url} alt="Trinket" width={800} height={600} />
         </div>
       </div>
     </main>
