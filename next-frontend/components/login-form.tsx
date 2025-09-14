@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -55,8 +54,7 @@ export function LoginForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>We will email you a magic link</CardDescription>
+          <CardTitle className="text-2xl">Sign in to Trinket!</CardTitle>
         </CardHeader>
         <CardContent>
           {success ? (
@@ -71,7 +69,7 @@ export function LoginForm({
                   <Input
                     id="email"
                     type="email"
-                    placeholder="m@example.com"
+                    placeholder="hackmit@trinket.world"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -83,7 +81,7 @@ export function LoginForm({
                 </Button>
               </div>
               <div className="mt-4 text-center text-sm text-muted-foreground">
-                No account needed. We will create one after you click the link.
+                No account needed -- just a link.
               </div>
             </form>
           )}
