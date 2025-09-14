@@ -13,6 +13,8 @@ export async function POST(req: Request) {
   const file = form.get("file");
   const title = (form.get("title") as string) || null;
   const note = (form.get("note") as string) || null;
+  const collectionIdRaw = (form.get("collection_id") as string) || null;
+  const collection_id = collectionIdRaw && collectionIdRaw.length > 0 ? collectionIdRaw : null;
   if (!(file instanceof File)) {
     return NextResponse.json({ error: "No file provided" }, { status: 400 });
   }
@@ -42,6 +44,7 @@ export async function POST(req: Request) {
       image_path: storagePath,
       model_path: "",
       visibility: "public",
+      collection_id,
     })
     .select("*")
     .single();

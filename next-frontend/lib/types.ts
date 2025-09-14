@@ -1,6 +1,7 @@
 export interface Trinket {
   id: string;
   owner_id: string;
+  collection_id?: string | null;
   title: string;
   note: string;
   image_path: string;

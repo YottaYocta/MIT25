@@ -14,28 +14,31 @@ export async function GET(_req: Request, ctx: Params) {
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   if (!data) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  // Generate signed URLs for files if they exist
-  const enhancedData = { ...data };
+  // Generate public URLs for files if they exist
+  let image_url: string | undefined;
+  let model_url: string | undefined;
+  let nano_url: string | undefined;
+
   if (data.image_path) {
     const { data: imageUrl } = supabase.storage
       .from("trinkets")
       .getPublicUrl(data.image_path);
-    enhancedData.image_url = imageUrl.publicUrl;
+    image_url = imageUrl.publicUrl;
   }
   if (data.model_path) {
     const { data: modelUrl } = supabase.storage
       .from("trinkets")
       .getPublicUrl(data.model_path);
-    enhancedData.model_url = modelUrl.publicUrl;
+    model_url = modelUrl.publicUrl;
   }
   if (data.nano_image_path) {
     const { data: nanoUrl } = supabase.storage
       .from("trinkets")
       .getPublicUrl(data.nano_image_path);
-    enhancedData.nano_url = nanoUrl.publicUrl;
+    nano_url = nanoUrl.publicUrl;
   }
 
-  return NextResponse.json(enhancedData);
+  return NextResponse.json({ ...data, image_url, model_url, nano_url });
 }
 
 export async function PATCH(req: Request, ctx: Params) {
@@ -49,7 +52,7 @@ export async function PATCH(req: Request, ctx: Params) {
 
   const body = await req.json();
   const allowed: Record<string, unknown> = {};
-  for (const key of ["title", "note", "visibility"]) {
+  for (const key of ["title", "note", "visibility", "collection_id"]) {
     if (key in body) allowed[key] = body[key];
   }
 
