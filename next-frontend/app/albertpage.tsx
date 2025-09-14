@@ -1,6 +1,6 @@
 'use client';
 
-import { CollectionView, TrinketData } from './components/CollectionView';
+import { CollectionView, TrinketData } from '@/components/CollectionView';
 
 const sampleTrinkets: TrinketData[] = [
   {

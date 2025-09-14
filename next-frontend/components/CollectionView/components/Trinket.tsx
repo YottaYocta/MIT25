@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, Suspense } from 'react';
+import { useRef, Suspense, useEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
@@ -14,40 +14,83 @@ interface TrinketProps {
   isFocused?: boolean;
 }
 
+// Debug component to test model URL accessibility
+function ModelDebugger({ modelPath }: { modelPath: string }) {
+  useEffect(() => {
+    const testModel = async () => {
+      try {
+        console.log('🧪 ModelDebugger: Testing model URL:', modelPath);
+        const response = await fetch(modelPath, { method: 'HEAD' });
+        console.log('🧪 ModelDebugger: Response status:', response.status);
+        console.log('🧪 ModelDebugger: Response headers:', Object.fromEntries(response.headers.entries()));
+        
+        if (response.ok) {
+          console.log('🧪 ModelDebugger: ✅ Model accessible');
+        } else {
+          console.log('🧪 ModelDebugger: ❌ Model not accessible');
+        }
+      } catch (error) {
+        console.error('🧪 ModelDebugger: Fetch error:', error);
+      }
+    };
+    
+    testModel();
+  }, [modelPath]);
+  
+  return null; // This component only logs debug info
+}
+
 // Component for loading GLTF models with proper error handling
 function GLTFModel({ modelPath }: { modelPath: string }) {
   console.log('🔍 GLTFModel: Attempting to load model from:', modelPath);
   
+  let gltfResult;
   try {
-    const { scene } = useGLTF(modelPath);
-    console.log('✅ GLTFModel: Successfully loaded model from:', modelPath);
-    console.log('📊 GLTFModel: Scene data:', scene);
-    
-    // Clone the scene to avoid sharing the same instance
-    const clonedScene = scene.clone();
-    
-    // Ensure proper material setup for lighting
-    clonedScene.traverse((child) => {
-      if ((child as THREE.Mesh).isMesh) {
-        const mesh = child as THREE.Mesh;
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        
-        // Ensure materials respond to lighting properly
-        if (mesh.material && 'needsUpdate' in mesh.material) {
-          mesh.material.needsUpdate = true;
-        }
-      }
-    });
-    
-    console.log('🎨 GLTFModel: Scene setup complete for:', modelPath);
-    return <primitive object={clonedScene} />;
+    gltfResult = useGLTF(modelPath);
   } catch (error) {
-    console.error('❌ GLTFModel: Failed to load GLB model:', modelPath);
-    console.error('❌ GLTFModel: Error details:', error);
-    console.error('❌ GLTFModel: Error stack:', (error as Error).stack);
+    console.error('❌ GLTFModel: useGLTF hook failed for:', modelPath);
+    console.error('❌ GLTFModel: Hook error type:', typeof error);
+    console.error('❌ GLTFModel: Hook error:', error);
+    
+    if (error instanceof Error) {
+      console.error('❌ GLTFModel: Error message:', error.message);
+      console.error('❌ GLTFModel: Error stack:', error.stack);
+    } else {
+      console.error('❌ GLTFModel: Non-Error object thrown:', JSON.stringify(error, null, 2));
+    }
+    
     throw error; // Re-throw to trigger error boundary
   }
+  
+  if (!gltfResult || !gltfResult.scene) {
+    const error = new Error(`Invalid GLTF result for model: ${modelPath}`);
+    console.error('❌ GLTFModel: Invalid GLTF result:', gltfResult);
+    throw error;
+  }
+  
+  const { scene } = gltfResult;
+  console.log('✅ GLTFModel: Successfully loaded model from:', modelPath);
+  console.log('📊 GLTFModel: Scene data:', scene);
+  
+  // Clone the scene to avoid sharing the same instance
+  const clonedScene = scene.clone();
+  
+  // Ensure proper material setup for lighting
+  clonedScene.traverse((child) => {
+    if ((child as THREE.Mesh).isMesh) {
+      const mesh = child as THREE.Mesh;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      
+      // Ensure materials respond to lighting properly
+      if (mesh.material && 'needsUpdate' in mesh.material) {
+        mesh.material.needsUpdate = true;
+      }
+    }
+  });
+  
+  console.log('🎨 GLTFModel: Scene setup complete for:', modelPath);
+  return <primitive object={clonedScene} />;
 }
 
 export function Trinket({
@@ -147,36 +190,39 @@ export function Trinket({
       )}
 
       {trinket.modelPath && trinket.modelPath.trim() !== '' ? (
-        <ModelErrorBoundary
-          fallback={
-            <mesh castShadow receiveShadow>
-              <boxGeometry args={[1, 1, 1]} />
-              <meshStandardMaterial 
-                color="#ff9999" 
-                transparent 
-                opacity={0.7}
-                roughness={0.6}
-                metalness={0.1}
-              />
-            </mesh>
-          }
-        >
-          <Suspense fallback={
-            <mesh castShadow receiveShadow>
-              <boxGeometry args={[0.8, 0.8, 0.8]} />
-              <meshStandardMaterial 
-                color="#ffffff" 
-                transparent 
-                opacity={0.5}
-                roughness={0.8}
-                metalness={0.0}
-                wireframe
-              />
-            </mesh>
-          }>
-            <GLTFModel modelPath={trinket.modelPath} />
-          </Suspense>
-        </ModelErrorBoundary>
+        <>
+          <ModelDebugger modelPath={trinket.modelPath} />
+          <ModelErrorBoundary
+            fallback={
+              <mesh castShadow receiveShadow>
+                <boxGeometry args={[1, 1, 1]} />
+                <meshStandardMaterial 
+                  color="#ff9999" 
+                  transparent 
+                  opacity={0.7}
+                  roughness={0.6}
+                  metalness={0.1}
+                />
+              </mesh>
+            }
+          >
+            <Suspense fallback={
+              <mesh castShadow receiveShadow>
+                <boxGeometry args={[0.8, 0.8, 0.8]} />
+                <meshStandardMaterial 
+                  color="#ffffff" 
+                  transparent 
+                  opacity={0.5}
+                  roughness={0.8}
+                  metalness={0.0}
+                  wireframe
+                />
+              </mesh>
+            }>
+              <GLTFModel modelPath={trinket.modelPath} />
+            </Suspense>
+          </ModelErrorBoundary>
+        </>
       ) : (
         // Fallback: Display a placeholder cube when no model path
         <mesh castShadow receiveShadow>

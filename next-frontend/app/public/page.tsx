@@ -1,6 +1,5 @@
 // @/next-frontend/app/page.tsx
 import { createClient } from "@/lib/supabase/server";
-import { LoginForm } from "@/components/login-form";
 import { RecentTrinkets } from "@/components/RecentTrinkets";
 import { Collections } from "@/components/Collections";
 import { Albert_Sans } from "next/font/google";

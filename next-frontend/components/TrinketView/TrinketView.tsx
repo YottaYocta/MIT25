@@ -28,7 +28,6 @@ export function TrinketView({
   trinket,
   backgroundColor = '#f5f5f5',
   showMetadata = true,
-  enableTouch: _enableTouch = true,
   enableKeyboard = true,
   className = '',
   onClose

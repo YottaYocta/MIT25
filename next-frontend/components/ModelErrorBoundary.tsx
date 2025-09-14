@@ -41,6 +41,7 @@ export class ModelErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
+      console.log('🚨 ModelErrorBoundary: Rendering fallback due to error state');
       return this.props.fallback || (
         <mesh castShadow receiveShadow>
           <boxGeometry args={[1, 1, 1]} />

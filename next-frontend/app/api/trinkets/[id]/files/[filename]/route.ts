@@ -97,8 +97,12 @@ export async function GET(_req: Request, ctx: Params) {
     return new NextResponse(arrayBuffer, {
       headers: {
         "Content-Type": contentType,
-        "Content-Disposition": `attachment; filename="${fileName}"`,
+        // Remove Content-Disposition for models to allow inline loading
+        ...(filename === "model" ? {} : { "Content-Disposition": `attachment; filename="${fileName}"` }),
         "Cache-Control": "public, max-age=31536000", // Cache for 1 year
+        "Access-Control-Allow-Origin": "*", // Allow CORS for model loading
+        "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
+        "Access-Control-Allow-Headers": "*",
       },
     });
   } catch (downloadError) {
