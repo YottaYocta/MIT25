@@ -18,9 +18,12 @@ export async function ensureAndFetchCurrentProfile(): Promise<Profile | null> {
 
   const user = authData.user;
 
+  // Extract username from email (part before @) as default name
+  const defaultName = user.email ? user.email.split('@')[0] : "";
+  
   const upsertPayload = {
     id: user.id,
-    full_name: user.user_metadata?.full_name ?? user.email ?? "",
+    full_name: user.user_metadata?.full_name ?? defaultName,
     email: user.email ?? "",
     avatar_image_path: user.user_metadata?.avatar_url ?? null,
   } as const;

@@ -2,18 +2,9 @@
 
 import Link from "next/link";
 import Button from "./Button";
-import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
-import { PlusIcon, LogOutIcon } from "lucide-react";
+import { PlusIcon, SettingsIcon } from "lucide-react";
 
 export const Nav = () => {
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/");
-  };
   return (
     <div className="fixed flex justify-between items-end bottom-0 left-0 h-20 py-2 w-screen px-4">
       <svg
@@ -42,8 +33,14 @@ export const Nav = () => {
         </defs>
       </svg>
 
-      {/* Left spacer to balance layout */}
-      <div className="w-16"></div>
+      {/* Left settings button */}
+      <div className="flex items-end">
+        <Link href="/settings">
+          <Button className="w-12 h-12 rounded-full flex items-center justify-center bg-gray-500/20 hover:bg-gray-500/30 border-gray-500/30">
+            <SettingsIcon className="h-5 w-5 text-gray-600" />
+          </Button>
+        </Link>
+      </div>
 
       {/* Center navigation */}
       <div className="flex gap-2 items-end">
@@ -60,15 +57,8 @@ export const Nav = () => {
         </Link>
       </div>
 
-      {/* Right logout button */}
-      <div className="flex items-end">
-        <Button 
-          className="w-12 h-12 rounded-full flex items-center justify-center bg-red-500/20 hover:bg-red-500/30 border-red-500/30"
-          handleClick={handleLogout}
-        >
-          <LogOutIcon className="h-5 w-5 text-red-600" />
-        </Button>
-      </div>
+      {/* Right spacer to balance layout */}
+      <div className="w-16"></div>
     </div>
   );
 };
