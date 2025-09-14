@@ -3,7 +3,7 @@
 import { useGLTF, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import { ModelErrorBoundary } from '../../ModelErrorBoundary';
-import { Suspense } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 
 interface GreekColumnsProps {
   positions: [number, number, number][];
@@ -17,6 +17,34 @@ interface MarbleTextures {
 
 function ColumnWithTextures({ marbleTextures }: { marbleTextures: MarbleTextures }) {
   const { scene } = useGLTF('/models/column/scene.gltf');
+  const [isReady, setIsReady] = useState(false);
+  
+  // Wait for model and materials to be fully ready
+  useEffect(() => {
+    if (scene) {
+      // Small delay to ensure materials are properly loaded and applied
+      const timer = setTimeout(() => {
+        setIsReady(true);
+      }, 100); // Shorter delay for static models
+      
+      return () => clearTimeout(timer);
+    }
+  }, [scene]);
+  
+  // Don't render until we're ready - show wireframe placeholder
+  if (!isReady) {
+    return (
+      <mesh castShadow receiveShadow>
+        <cylinderGeometry args={[15, 20, 200, 8]} />
+        <meshStandardMaterial 
+          color="#e0e0e0" 
+          wireframe 
+          transparent 
+          opacity={0.3}
+        />
+      </mesh>
+    );
+  }
   
   // Clone the scene to avoid sharing the same instance
   const columnClone = scene.clone();

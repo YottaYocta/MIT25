@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, Suspense, useEffect } from 'react';
+import { useRef, Suspense, useEffect, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
@@ -44,6 +44,7 @@ function ModelDebugger({ modelPath }: { modelPath: string }) {
 // Component for loading GLTF models with proper error handling
 function GLTFModel({ modelPath }: { modelPath: string }) {
   console.log('🔍 GLTFModel: Attempting to load model from:', modelPath);
+  const [isReady, setIsReady] = useState(false);
   
   let gltfResult;
   try {
@@ -80,6 +81,37 @@ function GLTFModel({ modelPath }: { modelPath: string }) {
   }
   
   const { scene } = gltfResult;
+  
+  // Wait for model and materials to be fully ready
+  useEffect(() => {
+    if (scene) {
+      // Small delay to ensure materials are properly loaded and applied
+      const timer = setTimeout(() => {
+        console.log('✅ GLTFModel: Model ready after delay for:', modelPath);
+        setIsReady(true);
+      }, 150); // 150ms delay to ensure proper material loading
+      
+      return () => clearTimeout(timer);
+    }
+  }, [scene, modelPath]);
+  
+  // Don't render until we're ready
+  if (!isReady) {
+    return (
+      <mesh castShadow receiveShadow>
+        <boxGeometry args={[0.8, 0.8, 0.8]} />
+        <meshStandardMaterial 
+          color="#ffffff" 
+          transparent 
+          opacity={0.3}
+          roughness={0.8}
+          metalness={0.0}
+          wireframe
+        />
+      </mesh>
+    );
+  }
+  
   console.log('✅ GLTFModel: Successfully loaded model from:', modelPath);
   console.log('📊 GLTFModel: Scene data:', scene);
   
