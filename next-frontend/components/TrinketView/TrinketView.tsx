@@ -103,7 +103,7 @@ export function TrinketView({
             trinket={processedTrinket}
             position={trinketPosition}
             radius={0.3}
-            isFocused={true}
+            isFocused={false}
           />
         </Suspense>
 
