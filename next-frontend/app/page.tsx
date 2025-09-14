@@ -6,6 +6,13 @@ import Link from "next/link";
 import { ImageViewer } from "@/components/image-viewer";
 import { RecentTrinkets } from "@/components/RecentTrinkets";
 import { Collections } from "@/components/Collections";
+import { Albert_Sans } from "next/font/google";
+
+const albertSans = Albert_Sans({
+  variable: "--font-albert-sans",
+  display: "swap",
+  subsets: ["latin"],
+});
 
 export default async function Home() {
   const supabase = await createClient();
@@ -17,7 +24,9 @@ export default async function Home() {
       <main className="min-h-svh flex items-center justify-center p-6">
         <div className="w-full max-w-sm">
           <div className="mb-6">
-            <h1 className="text-2xl font-semibold">Sign in to Trinket</h1>
+            <h1 className={`text-2xl font-semibold ${albertSans.className}`}>
+              Sign in to Trinket
+            </h1>
             <p className="text-sm text-muted-foreground">
               We will email you a magic link
             </p>
@@ -31,15 +40,19 @@ export default async function Home() {
   const profile = await ensureAndFetchCurrentProfile();
 
   return (
-    <main className="min-h-svh flex items-center justify-center p-6 overflow-x-clip">
+    <main className="h-dvh flex flex-col items-center justify-start p-6 overflow-x-clip">
       <div className="w-full max-w-2xl flex flex-col gap-6">
         <div>
-          <h2 className="font-bold mb-2">My Collections</h2>
+          <h2 className={`font-bold text-lg ${albertSans.className}`}>
+            My Collections
+          </h2>
           <Collections></Collections>
         </div>
 
         <div>
-          <h2 className="font-bold mb-2">Recent Trinkets</h2>
+          <h2 className={`font-bold text-lg ${albertSans.className}`}>
+            Recent Trinkets
+          </h2>
           <RecentTrinkets></RecentTrinkets>
         </div>
         <div className="flex items-center justify-between">

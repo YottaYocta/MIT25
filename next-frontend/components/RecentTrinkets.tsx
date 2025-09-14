@@ -49,7 +49,7 @@ export function RecentTrinkets({ count = 10 }: RecentTrinketsProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="w-full max-w-full overflow-x-visible h-96">
+      <div className="w-full max-w-full overflow-x-visible h-96 pt-20">
         {recentTrinkets.length > 0 && (
           <SpinningCarousel
             gapSpacing={0}
