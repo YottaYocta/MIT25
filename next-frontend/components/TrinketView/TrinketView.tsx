@@ -88,13 +88,15 @@ export function TrinketView({
         <GreekColumns positions={[columnPosition]} />
 
         <Suspense fallback={
-          <mesh position={trinketPosition}>
+          <mesh position={trinketPosition} castShadow receiveShadow>
             <boxGeometry args={[0.6, 0.6, 0.6]} />
-            <meshBasicMaterial 
-              color="#666666" 
+            <meshStandardMaterial 
+              color="#ffffff" 
               wireframe 
               transparent 
               opacity={0.5}
+              roughness={0.8}
+              metalness={0.0}
             />
           </mesh>
         }>

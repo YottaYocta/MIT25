@@ -10,16 +10,22 @@ type Params = { params: Promise<{ id: string; filename: string }> };
 
 export async function GET(_req: Request, ctx: Params) {
   const { id, filename } = await ctx.params;
+  console.log('🔍 API Route: Requested trinket ID:', id, 'filename:', filename);
+  
   const supabase = await createClient();
 
   // First verify the trinket exists and get the file paths
+  console.log('🔍 API Route: Querying database for trinket...');
   const { data: trinket, error: trinketError } = await supabase
     .from("trinkets")
     .select("image_path, model_path, nano_image_path")
     .eq("id", id)
     .maybeSingle();
 
+  console.log('📊 API Route: Database query result:', { trinket, trinketError });
+
   if (trinketError || !trinket) {
+    console.error('❌ API Route: Trinket not found or error:', trinketError);
     return NextResponse.json({ error: "Trinket not found" }, { status: 404 });
   }
 
@@ -28,56 +34,66 @@ export async function GET(_req: Request, ctx: Params) {
   let contentType = "application/octet-stream";
   let fileName = filename;
 
+  console.log('🔍 API Route: Processing filename:', filename);
+  console.log('🔍 API Route: Available paths:', {
+    image_path: trinket.image_path,
+    model_path: trinket.model_path,
+    nano_image_path: trinket.nano_image_path
+  });
+
   if (filename === "image" && trinket.image_path) {
     filePath = trinket.image_path;
-    // Extract filename from path for proper download name
     fileName = trinket.image_path.split('/').pop() || 'image';
-
-    // Determine content type from file extension
     const ext = trinket.image_path.toLowerCase();
     if (ext.endsWith('.png')) contentType = "image/png";
     else if (ext.endsWith('.jpg') || ext.endsWith('.jpeg')) contentType = "image/jpeg";
     else if (ext.endsWith('.webp')) contentType = "image/webp";
     else if (ext.endsWith('.gif')) contentType = "image/gif";
+    console.log('🖼️ API Route: Serving image file:', filePath);
   } else if (filename === "model" && trinket.model_path) {
     filePath = trinket.model_path;
-    // Extract filename from path for proper download name
     fileName = trinket.model_path.split('/').pop() || 'model';
-
-    // Determine content type from file extension
     const ext = trinket.model_path.toLowerCase();
     if (ext.endsWith('.glb')) contentType = "model/gltf-binary";
     else if (ext.endsWith('.gltf')) contentType = "model/gltf+json";
-    else if (ext.endsWith('.obj')) contentType = "application/octet-stream"; // OBJ files
-    else if (ext.endsWith('.fbx')) contentType = "application/octet-stream"; // FBX files
+    else if (ext.endsWith('.obj')) contentType = "application/octet-stream";
+    else if (ext.endsWith('.fbx')) contentType = "application/octet-stream";
+    console.log('🎨 API Route: Serving model file:', filePath, 'with content type:', contentType);
   } else if (filename === "nano" && trinket.nano_image_path) {
     filePath = trinket.nano_image_path;
     fileName = trinket.nano_image_path.split('/').pop() || 'nano';
-
     const ext = trinket.nano_image_path.toLowerCase();
     if (ext.endsWith('.png')) contentType = "image/png";
     else if (ext.endsWith('.jpg') || ext.endsWith('.jpeg')) contentType = "image/jpeg";
     else if (ext.endsWith('.webp')) contentType = "image/webp";
     else if (ext.endsWith('.gif')) contentType = "image/gif";
+    console.log('🖼️ API Route: Serving nano image file:', filePath);
   }
 
   if (!filePath) {
+    console.error('❌ API Route: No file path found for filename:', filename);
     return NextResponse.json({ error: "File not found" }, { status: 404 });
   }
 
   try {
     // Download the file from Supabase storage
+    console.log('🔍 API Route: Attempting to download from Supabase storage:', filePath);
     const { data, error } = await supabase.storage
       .from("trinkets")
       .download(filePath);
 
+    console.log('📊 API Route: Supabase storage result:', { hasData: !!data, error });
+
     if (error || !data) {
+      console.error('❌ API Route: File download failed:', error);
       return NextResponse.json({ error: "File download failed" }, { status: 500 });
     }
 
+    console.log('✅ API Route: File downloaded successfully, size:', data.size, 'bytes');
     // Convert blob to array buffer for response
     const arrayBuffer = await data.arrayBuffer();
 
+    console.log('✅ API Route: Sending response with content type:', contentType, 'and size:', arrayBuffer.byteLength, 'bytes');
     return new NextResponse(arrayBuffer, {
       headers: {
         "Content-Type": contentType,
@@ -85,7 +101,8 @@ export async function GET(_req: Request, ctx: Params) {
         "Cache-Control": "public, max-age=31536000", // Cache for 1 year
       },
     });
-  } catch {
+  } catch (downloadError) {
+    console.error('❌ API Route: Exception during file download:', downloadError);
     return NextResponse.json(
       { error: "Failed to download file" },
       { status: 500 }

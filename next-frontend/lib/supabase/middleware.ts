@@ -51,7 +51,8 @@ export async function updateSession(request: NextRequest) {
   const publicRoutes = [
     "/",
     "/public",
-    "/trinkets"
+    "/trinkets",
+    "/auth"
   ];
   
   // Check if the current path is a public route or starts with a public route pattern

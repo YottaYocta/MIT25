@@ -31,13 +31,14 @@ export function LoginForm({
     setError(null);
 
     try {
-      const nextUrl = "/";
+      const nextUrl = "/public";
+      const redirectUrl = `${window.location.origin}/auth/confirm?next=${encodeURIComponent(nextUrl)}`;
+      console.log("Sending magic link with redirect URL:", redirectUrl);
+      
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm?next=${encodeURIComponent(
-            nextUrl,
-          )}`,
+          emailRedirectTo: redirectUrl,
           shouldCreateUser: true,
         },
       });

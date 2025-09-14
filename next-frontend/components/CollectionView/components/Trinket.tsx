@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, Suspense } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
@@ -14,10 +14,40 @@ interface TrinketProps {
   isFocused?: boolean;
 }
 
-// Component for loading GLTF models
+// Component for loading GLTF models with proper error handling
 function GLTFModel({ modelPath }: { modelPath: string }) {
-  const { scene } = useGLTF(modelPath);
-  return <primitive object={scene.clone()} />;
+  console.log('🔍 GLTFModel: Attempting to load model from:', modelPath);
+  
+  try {
+    const { scene } = useGLTF(modelPath);
+    console.log('✅ GLTFModel: Successfully loaded model from:', modelPath);
+    console.log('📊 GLTFModel: Scene data:', scene);
+    
+    // Clone the scene to avoid sharing the same instance
+    const clonedScene = scene.clone();
+    
+    // Ensure proper material setup for lighting
+    clonedScene.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh;
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        
+        // Ensure materials respond to lighting properly
+        if (mesh.material && 'needsUpdate' in mesh.material) {
+          mesh.material.needsUpdate = true;
+        }
+      }
+    });
+    
+    console.log('🎨 GLTFModel: Scene setup complete for:', modelPath);
+    return <primitive object={clonedScene} />;
+  } catch (error) {
+    console.error('❌ GLTFModel: Failed to load GLB model:', modelPath);
+    console.error('❌ GLTFModel: Error details:', error);
+    console.error('❌ GLTFModel: Error stack:', (error as Error).stack);
+    throw error; // Re-throw to trigger error boundary
+  }
 }
 
 export function Trinket({
@@ -26,6 +56,8 @@ export function Trinket({
   radius = 0.3,
   isFocused = false
 }: TrinketProps) {
+  console.log('🔍 Trinket: Rendering trinket with data:', trinket);
+  console.log('🔍 Trinket: Model path received:', trinket.modelPath);
   const groupRef = useRef<THREE.Group>(null);
   const targetPosition = useRef<THREE.Vector3>(new THREE.Vector3(...position));
   const currentPosition = useRef<THREE.Vector3>(new THREE.Vector3(...position));
@@ -114,7 +146,7 @@ export function Trinket({
         </>
       )}
 
-      {trinket.modelPath ? (
+      {trinket.modelPath && trinket.modelPath.trim() !== '' ? (
         <ModelErrorBoundary
           fallback={
             <mesh castShadow receiveShadow>
@@ -123,11 +155,27 @@ export function Trinket({
                 color="#ff9999" 
                 transparent 
                 opacity={0.7}
+                roughness={0.6}
+                metalness={0.1}
               />
             </mesh>
           }
         >
-          <GLTFModel modelPath={trinket.modelPath} />
+          <Suspense fallback={
+            <mesh castShadow receiveShadow>
+              <boxGeometry args={[0.8, 0.8, 0.8]} />
+              <meshStandardMaterial 
+                color="#ffffff" 
+                transparent 
+                opacity={0.5}
+                roughness={0.8}
+                metalness={0.0}
+                wireframe
+              />
+            </mesh>
+          }>
+            <GLTFModel modelPath={trinket.modelPath} />
+          </Suspense>
         </ModelErrorBoundary>
       ) : (
         // Fallback: Display a placeholder cube when no model path
@@ -137,9 +185,24 @@ export function Trinket({
             color="#cccccc" 
             transparent 
             opacity={0.7}
+            roughness={0.6}
+            metalness={0.1}
           />
         </mesh>
       )}
     </group>
   );
+}
+
+// Preload common models to improve performance
+export function preloadTrinketModels(modelPaths: string[]) {
+  modelPaths.forEach(path => {
+    if (path && path.trim() !== '') {
+      try {
+        useGLTF.preload(path);
+      } catch (error) {
+        console.warn('Failed to preload model:', path, error);
+      }
+    }
+  });
 }
