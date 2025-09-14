@@ -3,77 +3,43 @@
 
 import { useEffect, useState } from "react";
 import { Trinket } from "@/lib/types";
-import RandomTrinketCard from "./RandomTrinketCard";
+import CollectionCard from "./CollectionCard";
 import { SpinningCarousel } from "./SpinningCarousel";
 
-interface GroupedRandomTrinketsProps {
-  minGroupSize?: number;
-  maxGroupSize?: number;
-  maxGroups?: number; // Optional: limit total number of groups/cards rendered
-  user?: { id: string }; // optional user prop to filter trinkets by owner_id
+interface CollectionsProps {
+  maxCollections?: number;
+  user?: { id: string };
 }
 
-function groupTrinketsRandomly<T>(
-  trinkets: T[],
-  minGroupSize = 2,
-  maxGroupSize = 5
-): T[][] {
-  const shuffled = [...trinkets].sort(() => Math.random() - 0.5);
-  const groups: T[][] = [];
-  let i = 0;
-  while (i < shuffled.length) {
-    const groupSize =
-      Math.floor(Math.random() * (maxGroupSize - minGroupSize + 1)) +
-      minGroupSize;
-    groups.push(shuffled.slice(i, i + groupSize));
-    i += groupSize;
-  }
-  return groups;
-}
-
-export function Collections({
-  minGroupSize = 2,
-  maxGroupSize = 4,
-  maxGroups = 5,
-  user,
-}: GroupedRandomTrinketsProps) {
-  const [allTrinkets, setAllTrinkets] = useState<Trinket[]>([]);
-  const [trinketGroups, setTrinketGroups] = useState<Trinket[][]>([]);
+export function Collections({ maxCollections = 8, user }: CollectionsProps) {
+  const [collections, setCollections] = useState<Array<{ id: string; name: string; created_at: string }>>([]);
+  const [trinkets, setTrinkets] = useState<Trinket[]>([]);
 
   useEffect(() => {
-    const fetchTrinkets = async () => {
+    const load = async () => {
       try {
-        const res = await fetch("/api/trinkets", { credentials: "include" });
-        const json: Trinket[] = await res.json();
-        setAllTrinkets(json);
+        const [cRes, tRes] = await Promise.all([
+          fetch("/api/collections", { credentials: "include", cache: "no-store" }),
+          fetch("/api/trinkets", { credentials: "include", cache: "no-store" }),
+        ]);
+        if (!cRes.ok) return;
+        const cJson: Array<{ id: string; name: string; created_at: string }> = await cRes.json();
+        const tJson: Trinket[] = tRes.ok ? await tRes.json() : [];
+
+        // If user provided, filter both
+        const filteredCollections = user ? cJson.filter(() => true) : cJson;
+        const filteredTrinkets = user
+          ? tJson.filter(t => t.owner_id === user.id)
+          : tJson;
+
+        setCollections(filteredCollections.slice(0, maxCollections));
+        setTrinkets(filteredTrinkets);
       } catch (e) {
-        console.error("Failed to fetch trinkets", e);
+        console.error("Failed to load collections", e);
       }
     };
-    fetchTrinkets();
-  }, []);
-
-  useEffect(() => {
-    if (allTrinkets.length === 0) {
-      setTrinketGroups([]);
-      return;
-    }
-
-    // Filter trinkets if user is provided
-    let filteredTrinkets = allTrinkets;
-    if (user) {
-      filteredTrinkets = allTrinkets.filter(
-        (trinket) => trinket.owner_id === user.id
-      );
-    }
-
-    const grouped = groupTrinketsRandomly(
-      filteredTrinkets,
-      minGroupSize,
-      maxGroupSize
-    );
-    setTrinketGroups(grouped.slice(0, maxGroups));
-  }, [allTrinkets, minGroupSize, maxGroupSize, maxGroups, user]);
+    load();
+  }, [user, maxCollections]);
 
   const startingIndex = 0;
   const [currentIndex, setCurrentIndex] = useState<null | number>(
@@ -86,15 +52,21 @@ export function Collections({
       className="h-96 w-full"
       handleFocused={setCurrentIndex}
     >
-      {trinketGroups.map((group, idx) => (
-        <RandomTrinketCard
-          key={idx}
-          trinkets={group}
-          renderSubtitle={(t) => t.note ?? "No note"}
-          renderDate={(t) => new Date(t.created_at).toLocaleDateString()}
-          focused={currentIndex === idx}
-        />
-      ))}
+      {collections.map((col, idx) => {
+        const inCollection = trinkets
+          .filter(t => t.collection_id === col.id)
+          .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        const cover = inCollection.length > 0 ? inCollection[0] : null;
+        return (
+          <CollectionCard
+            key={col.id}
+            collection={col}
+            coverTrinket={cover}
+            subtitle={`${inCollection.length} item${inCollection.length === 1 ? "" : "s"}`}
+            focused={currentIndex === idx}
+          />
+        );
+      })}
     </SpinningCarousel>
   );
 }
