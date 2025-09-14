@@ -31,10 +31,7 @@ export default async function Home() {
             </p>
             <div className="flex gap-2 justify-center">
               <Link href="/auth/login">
-                <Button className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white border-blue-500">Sign In</Button>
-              </Link>
-              <Link href="/auth/sign-up">
-                <Button className="px-6 py-2">Sign Up</Button>
+                <Button className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-black border-blue-500">Make Some Trinkets!</Button>
               </Link>
             </div>
           </div>
