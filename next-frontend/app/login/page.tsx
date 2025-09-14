@@ -1,12 +1,9 @@
 // @/next-frontend/app/page.tsx
 import { createClient } from "@/lib/supabase/server";
 import { LoginForm } from "@/components/login-form";
-import { LogoutButton } from "@/components/logout-button";
-import Link from "next/link";
-import { RecentTrinkets } from "@/components/RecentTrinkets";
-import { Collections } from "@/components/Collections";
+import { ensureAndFetchCurrentProfile } from "@/lib/profiles";
 import { Albert_Sans } from "next/font/google";
-import { Nav } from "@/components/Nav";
+import { redirect } from "next/navigation";
 
 const albertSans = Albert_Sans({
   variable: "--font-albert-sans",
@@ -19,7 +16,9 @@ export default async function Home() {
   const { data, error } = await supabase.auth.getClaims();
   const user = !error ? data?.claims : null;
 
-  if (!user) {
+  const profile = await ensureAndFetchCurrentProfile();
+
+  if (!user || !profile) {
     return (
       <main className="min-h-svh flex items-center justify-center p-6">
         <div className="w-full max-w-sm">
@@ -36,25 +35,5 @@ export default async function Home() {
       </main>
     );
   }
-
-  return (
-    <main className="h-dvh flex flex-col items-center justify-start p-6 overflow-x-clip">
-      <div className="w-full max-w-2xl flex flex-col gap-6">
-        <div>
-          <h2 className={`font-bold text-lg ${albertSans.className}`}>
-            My Collections
-          </h2>
-          <Collections />
-        </div>
-
-        <div>
-          <h2 className={`font-bold text-lg ${albertSans.className}`}>
-            Recent Trinkets
-          </h2>
-          <RecentTrinkets />
-        </div>
-      </div>
-      <Nav></Nav>
-    </main>
-  );
+  redirect("/private");
 }
