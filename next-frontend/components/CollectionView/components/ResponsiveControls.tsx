@@ -3,11 +3,11 @@
 import { ResponsiveControlsProps } from '../types';
 
 export function ResponsiveControls({
-  currentIndex,
-  totalViews,
-  onNavigate,
-  currentTrinket,
-  showMetadata = true
+  currentIndex: _currentIndex,
+  totalViews: _totalViews,
+  onNavigate: _onNavigate,
+  currentTrinket: _currentTrinket,
+  showMetadata: _showMetadata = true
 }: ResponsiveControlsProps) {
   return null;
 }

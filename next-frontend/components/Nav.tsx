@@ -1,10 +1,21 @@
+"use client";
+
 import Link from "next/link";
 import Button from "./Button";
-import { PlusIcon } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+import { PlusIcon, LogOutIcon } from "lucide-react";
 
 export const Nav = () => {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/");
+  };
   return (
-    <div className="fixed flex justify-center items-end gap-2 bottom-0 left-0 h-20 py-2 w-screen">
+    <div className="fixed flex justify-between items-end bottom-0 left-0 h-20 py-2 w-screen px-4">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 2862 90"
@@ -31,18 +42,33 @@ export const Nav = () => {
         </defs>
       </svg>
 
-      <Link href={"/private"}>
-        <Button className="h-8 w-32 justify-center">My Trinkets</Button>
-      </Link>
-      <Link href={"/upload"}>
-        <Button className="w-16 h-16 rounded-full flex items-center justify-center">
-          <PlusIcon></PlusIcon>
-        </Button>
-      </Link>
+      {/* Left spacer to balance layout */}
+      <div className="w-16"></div>
 
-      <Link href={"/public"}>
-        <Button className="h-8 w-32 justify-center">Public</Button>
-      </Link>
+      {/* Center navigation */}
+      <div className="flex gap-2 items-end">
+        <Link href={"/private"}>
+          <Button className="h-8 w-32 justify-center">My Trinkets</Button>
+        </Link>
+        <Link href={"/upload"}>
+          <Button className="w-16 h-16 rounded-full flex items-center justify-center">
+            <PlusIcon></PlusIcon>
+          </Button>
+        </Link>
+        <Link href={"/public"}>
+          <Button className="h-8 w-32 justify-center">Public</Button>
+        </Link>
+      </div>
+
+      {/* Right logout button */}
+      <div className="flex items-end">
+        <Button 
+          className="w-12 h-12 rounded-full flex items-center justify-center bg-red-500/20 hover:bg-red-500/30 border-red-500/30"
+          handleClick={handleLogout}
+        >
+          <LogOutIcon className="h-5 w-5 text-red-600" />
+        </Button>
+      </div>
     </div>
   );
 };

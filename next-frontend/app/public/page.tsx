@@ -5,6 +5,8 @@ import { RecentTrinkets } from "@/components/RecentTrinkets";
 import { Collections } from "@/components/Collections";
 import { Albert_Sans } from "next/font/google";
 import { ConditionalNav } from "@/components/ConditionalNav";
+import Link from "next/link";
+import Button from "@/components/Button";
 
 const albertSans = Albert_Sans({
   variable: "--font-albert-sans",
@@ -19,18 +21,33 @@ export default async function Home() {
 
   if (!user) {
     return (
-      <main className="min-h-svh flex items-center justify-center p-6">
-        <div className="w-full max-w-sm">
-          <div className="mb-6">
-            <h1 className={`text-2xl font-semibold ${albertSans.className}`}>
-              Sign in to Trinket
+      <main className="h-dvh flex flex-col items-center justify-start p-6 overflow-x-clip">
+        <div className="w-full max-w-2xl flex flex-col gap-6">
+          <div className="text-center mb-6">
+            <h1 className={`text-3xl font-bold mb-2 ${albertSans.className}`}>
+              Welcome to Trinket
             </h1>
-            <p className="text-sm text-muted-foreground">
-              We will email you a magic link
+            <p className="text-lg text-muted-foreground mb-4">
+              Discover amazing 3D collections from creators around the world
             </p>
+            <div className="flex gap-2 justify-center">
+              <Link href="/auth/login">
+                <Button className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white border-blue-500">Sign In</Button>
+              </Link>
+              <Link href="/auth/sign-up">
+                <Button className="px-6 py-2">Sign Up</Button>
+              </Link>
+            </div>
           </div>
-          <LoginForm />
+          
+          <div>
+            <h2 className={`font-bold text-lg ${albertSans.className}`}>
+              Recent Trinkets
+            </h2>
+            <RecentTrinkets />
+          </div>
         </div>
+        <ConditionalNav />
       </main>
     );
   }
