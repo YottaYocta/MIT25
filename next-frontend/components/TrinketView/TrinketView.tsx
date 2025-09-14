@@ -104,6 +104,7 @@ export function TrinketView({
             position={trinketPosition}
             radius={0.3}
             isFocused={false}
+            enableBobbing={true}
           />
         </Suspense>
 

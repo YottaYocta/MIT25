@@ -12,6 +12,7 @@ interface TrinketProps {
   position?: [number, number, number];
   radius?: number;
   isFocused?: boolean;
+  enableBobbing?: boolean;
 }
 
 // Debug component to test model URL accessibility
@@ -97,7 +98,8 @@ export function Trinket({
   trinket,
   position = [0, -0.5, 0],
   radius = 0.3,
-  isFocused = false
+  isFocused = false,
+  enableBobbing = false
 }: TrinketProps) {
   console.log('🔍 Trinket: Rendering trinket with data:', trinket);
   console.log('🔍 Trinket: Model path received:', trinket.modelPath);
@@ -115,8 +117,8 @@ export function Trinket({
     if (groupRef.current) {
       currentPosition.current.lerp(targetPosition.current, 0.02);
 
-      // Add subtle bobbing for focused trinkets
-      if (isFocused) {
+      // Add subtle bobbing for focused trinkets or when explicitly enabled
+      if (isFocused || enableBobbing) {
         const targetBobbing = Math.sin(state.clock.elapsedTime * 2.5) * 0.05; // Reduced bobbing
         bobbingOffset.current = THREE.MathUtils.lerp(bobbingOffset.current, targetBobbing, 0.1);
       } else {
