@@ -9,9 +9,10 @@ import { Trinket } from "@/lib/types";
 interface RecentTrinketsProps {
   count?: number; // how many recent trinkets to show, default 10
   user?: { id: string }; // optional user prop to filter trinkets by owner_id
+  hide_fails
 }
 
-export function RecentTrinkets({ count = 10, user }: RecentTrinketsProps) {
+export function RecentTrinkets({ count = 100, user }: RecentTrinketsProps) {
   const [allTrinkets, setAllTrinkets] = useState<Trinket[]>([]);
   const [recentTrinkets, setRecentTrinkets] = useState<Trinket[]>([]);
   const [focusedIndex, setFocusedIndex] = useState<number>(0);
@@ -46,6 +47,10 @@ export function RecentTrinkets({ count = 10, user }: RecentTrinketsProps) {
         (trinket) => trinket.owner_id === user.id
       );
     }
+
+    filteredTrinkets = allTrinkets.filter((trinket) => {
+      return trinket.model_path !== '' && trinket.model_path != null;
+    });
 
     const sorted = [...filteredTrinkets].sort(
       (a, b) =>

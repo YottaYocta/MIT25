@@ -11,7 +11,6 @@ export interface Trinket {
   created_at: string;
   image_url: string;
   model_url: string;
-  // Optional nano image support
-  nano_image_path?: string;
-  nano_url?: string;
+  nano_image_path: string;
+  nano_url: string;
 }
