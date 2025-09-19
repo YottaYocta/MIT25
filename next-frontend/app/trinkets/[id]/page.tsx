@@ -91,6 +91,18 @@ export default function TrinketPage() {
         } catch (modelTestError) {
           console.error('❌ TrinketPage: Error testing model endpoint:', modelTestError);
         }
+
+        const res = await fetch(`/api/profiles/${apiTrinket.owner_id}`, {
+          method: "GET",
+          cache: "no-store" // no stale profiles
+        });
+        if (!res.ok) throw new Error("Failed to load profile");
+
+        const body = await res.json();
+        console.log("User body:");
+        console.log(body);
+        const creatorName = body.data.full_name;
+        console.log("creatorName", creatorName)
         
         // Map API data to TrinketView format
         const trinketData: TrinketData = {
@@ -98,7 +110,7 @@ export default function TrinketPage() {
           modelPath: modelApiUrl,
           title: apiTrinket.title,
           note: apiTrinket.note,
-          creatorName: 'Unknown Creator', // API doesn't have creator name, could be enhanced
+          creatorName: creatorName, 
           dateCreated: new Date(apiTrinket.created_at),
           color: '#4ECDC4', // Default color, could be enhanced with user preferences
           location: 'Unknown Location', // API doesn't have location, could be enhanced
