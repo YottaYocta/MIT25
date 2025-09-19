@@ -8,30 +8,37 @@ import { Trinket } from "@/lib/types";
 
 interface RecentTrinketsProps {
   count?: number; // how many recent trinkets to show, default 10
-  user?: { id: string }; // optional user prop to filter trinkets by owner_id
-  hide_fails
+  filterType?: 'private' | 'public'; // filter type for API query
+  user?: { id: string }; // optional user prop to filter trinkets by owner_id (deprecated)
 }
 
-export function RecentTrinkets({ count = 100, user }: RecentTrinketsProps) {
+export function RecentTrinkets({ count = 100, filterType = 'public' }: RecentTrinketsProps) {
   const [allTrinkets, setAllTrinkets] = useState<Trinket[]>([]);
   const [recentTrinkets, setRecentTrinkets] = useState<Trinket[]>([]);
   const [focusedIndex, setFocusedIndex] = useState<number>(0);
 
-  // Fetch all trinkets once on mount
+  // Fetch trinkets based on filterType
   useEffect(() => {
-    const fetchAllTrinkets = async () => {
+    const fetchTrinkets = async () => {
       try {
-        const res = await fetch("/api/trinkets", { credentials: "include" });
+        const params = new URLSearchParams();
+        if (filterType) {
+          params.set('filterType', filterType);
+        }
+        
+        const res = await fetch(`/api/trinkets?${params.toString()}`, { 
+          credentials: "include" 
+        });
         const json: Trinket[] = await res.json();
         setAllTrinkets(json);
       } catch (e) {
         console.error(e);
       }
     };
-    fetchAllTrinkets();
-  }, []);
+    fetchTrinkets();
+  }, [filterType]);
 
-  // Whenever allTrinkets or count changes, update recentTrinkets sorted by created_at desc
+  // Process trinkets when data changes (API now handles filtering and sorting)
   useEffect(() => {
     if (!allTrinkets.length) {
       setRecentTrinkets([]);
@@ -39,26 +46,14 @@ export function RecentTrinkets({ count = 100, user }: RecentTrinketsProps) {
       return;
     }
 
-    let filteredTrinkets = allTrinkets;
-
-    // If user is provided, filter trinkets by owner_id
-    if (user) {
-      filteredTrinkets = allTrinkets.filter(
-        (trinket) => trinket.owner_id === user.id
-      );
-    }
-
-    filteredTrinkets = allTrinkets.filter((trinket) => {
+    // Filter out trinkets without models and apply count limit
+    const trinketsWithModels = allTrinkets.filter((trinket) => {
       return trinket.model_path !== '' && trinket.model_path != null;
     });
 
-    const sorted = [...filteredTrinkets].sort(
-      (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
-    setRecentTrinkets(sorted.slice(0, count));
+    setRecentTrinkets(trinketsWithModels.slice(0, count));
     setFocusedIndex(0);
-  }, [allTrinkets, count, user]);
+  }, [allTrinkets, count]);
 
   return (
     <div className="flex flex-col gap-3">

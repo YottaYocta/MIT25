@@ -99,10 +99,7 @@ export default function TrinketPage() {
         if (!res.ok) throw new Error("Failed to load profile");
 
         const body = await res.json();
-        console.log("User body:");
-        console.log(body);
         const creatorName = body.data.full_name;
-        console.log("creatorName", creatorName)
         
         // Map API data to TrinketView format
         const trinketData: TrinketData = {

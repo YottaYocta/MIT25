@@ -40,7 +40,7 @@ export default async function Home() {
             <h2 className={`font-bold text-lg ${albertSans.className}`}>
               Public Trinkets
             </h2>
-            <RecentTrinkets />
+            <RecentTrinkets filterType="public" />
           </div>
         </div>
         <ConditionalNav />
@@ -62,7 +62,7 @@ export default async function Home() {
           <h2 className={`font-bold text-lg ${albertSans.className}`}>
             Recent Trinkets
           </h2>
-          <RecentTrinkets />
+          <RecentTrinkets filterType="public" />
         </div>
       </div>
       <ConditionalNav />

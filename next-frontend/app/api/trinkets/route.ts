@@ -1,9 +1,31 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-export async function GET() {
+export async function GET(req: Request) {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("trinkets").select("*");
+  
+  // Get current user (if any)
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  // Parse query parameters for filtering intent
+  const url = new URL(req.url);
+  const filterType = url.searchParams.get('filterType'); // 'private' or 'public'
+  
+  let query = supabase.from("trinkets").select("*");
+  
+  if (filterType === 'private' && user) {
+    // Private: only show user's own trinkets
+    query = query.eq('owner_id', user.id);
+  } else {
+    // Public (default): only show public trinkets
+    query = query.eq('visibility', 'public');
+  }
+  
+  // Add ordering by creation date (newest first)
+  query = query.order('created_at', { ascending: false });
+  
+  const { data, error } = await query;
+  
   if (error)
     return NextResponse.json({ error: error.message }, { status: 400 });
 

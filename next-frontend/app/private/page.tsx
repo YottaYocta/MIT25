@@ -25,9 +25,9 @@ export default async function Home() {
       <div className="w-full flex flex-col gap-6">
         <div className="text-center bg-gray-500/20 backdrop-blur-md rounded-3xl p-8 border border-white/20 shadow-2xl w-full">
           <h2 className={`font-bold text-2xl ${albertSans.className} mb-6`}>
-            All The Trinkets!
+            My Trinkets
           </h2>
-          <RecentTrinkets />
+          <RecentTrinkets filterType="private" />
         </div>
       </div>
       <ConditionalNav />
