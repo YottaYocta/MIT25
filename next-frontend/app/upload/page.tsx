@@ -208,7 +208,6 @@ export default function UploadPage() {
                 id="file"
                 type="file"
                 accept="image/*,.heic,.heif"
-                capture="environment"
                 onChange={(e) => {
                   const f = e.target.files?.[0];
                   if (f) void onStart(f);

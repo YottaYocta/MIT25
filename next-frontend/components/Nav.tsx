@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import Button from "./Button";
-import { PlusIcon, SettingsIcon } from "lucide-react";
+import { SettingsIcon } from "lucide-react";
+import { NavUpload } from "./NavUpload";
 
 export const Nav = () => {
   return (
@@ -47,11 +48,7 @@ export const Nav = () => {
         <Link href={"/private"}>
           <Button className="h-8 w-32 justify-center">My Trinkets</Button>
         </Link>
-        <Link href={"/upload"}>
-          <Button className="w-16 h-16 rounded-full flex items-center justify-center">
-            <PlusIcon></PlusIcon>
-          </Button>
-        </Link>
+        <NavUpload />
         <Link href={"/public"}>
           <Button className="h-8 w-32 justify-center">Public</Button>
         </Link>
