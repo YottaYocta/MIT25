@@ -14,6 +14,7 @@ interface TrinketProps {
   isFocused?: boolean;
   enableBobbing?: boolean;
   userRotationY?: number;
+  userRotationX?: number;
   autoRotate?: boolean;
 }
 
@@ -22,11 +23,11 @@ function ModelDebugger({ modelPath }: { modelPath: string }) {
   useEffect(() => {
     const testModel = async () => {
       try {
-        console.log('🧪 ModelDebugger: Testing model URL:', modelPath);
+        // console.log('🧪 ModelDebugger: Testing model URL:', modelPath);
         // Use GET in dev to avoid HEAD method issues on API routes
         const response = await fetch(modelPath, { method: process.env.NODE_ENV === 'development' ? 'GET' : 'HEAD' });
-        console.log('🧪 ModelDebugger: Response status:', response.status);
-        console.log('🧪 ModelDebugger: Response headers:', Object.fromEntries(response.headers.entries()));
+        // console.log('🧪 ModelDebugger: Response status:', response.status);
+        // console.log('🧪 ModelDebugger: Response headers:', Object.fromEntries(response.headers.entries()));
         
         if (response.ok) {
           console.log('🧪 ModelDebugger: ✅ Model accessible');
@@ -105,6 +106,7 @@ export function Trinket({
   isFocused = false,
   enableBobbing = false,
   userRotationY = 0,
+  userRotationX = 0,
   autoRotate = true
 }: TrinketProps) {
   // console.log('Trinket: render', trinket?.id, trinket?.modelPath);
@@ -123,11 +125,12 @@ export function Trinket({
       currentPosition.current.lerp(targetPosition.current, 0.02);
 
       // Add subtle bobbing for focused trinkets or when explicitly enabled
+      const bobScale = 0.02;
       if (isFocused || enableBobbing) {
-        const targetBobbing = Math.sin(state.clock.elapsedTime * 2.5) * 0.05; // Reduced bobbing
+        const targetBobbing = Math.sin(state.clock.elapsedTime * 2.5) * bobScale; 
         bobbingOffset.current = THREE.MathUtils.lerp(bobbingOffset.current, targetBobbing, 0.1);
       } else {
-        bobbingOffset.current = THREE.MathUtils.lerp(bobbingOffset.current, 0, 0.05);
+        bobbingOffset.current = THREE.MathUtils.lerp(bobbingOffset.current, 0, bobScale);
       }
 
       const finalPosition = currentPosition.current.clone();
@@ -157,7 +160,28 @@ export function Trinket({
         lerpFactor
       );
 
-      groupRef.current.rotation.y = currentRotation.current + userRotationY;
+      // Apply rotations relative to camera: yaw around world Y, pitch around camera right
+      const yaw = currentRotation.current + userRotationY;
+
+      // Compute camera right vector in world space (perpendicular to forward and world up)
+      const cameraForward = new THREE.Vector3();
+      camera.getWorldDirection(cameraForward).normalize();
+      const worldUp = new THREE.Vector3(0, 1, 0);
+      let cameraRight = new THREE.Vector3().crossVectors(cameraForward, worldUp);
+      if (cameraRight.lengthSq() < 1e-6) {
+        cameraRight = new THREE.Vector3(1, 0, 0);
+      } else {
+        cameraRight.normalize();
+      }
+
+      const yawQuaternion = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+      // Invert pitch so upward drags tilt the object away from the camera
+      const pitchQuaternion = new THREE.Quaternion().setFromAxisAngle(cameraRight, -userRotationX);
+
+      // Compose: yaw then pitch (camera-relative)
+      const finalQuaternion = yawQuaternion.clone();
+      finalQuaternion.premultiply(pitchQuaternion);
+      groupRef.current.setRotationFromQuaternion(finalQuaternion);
     }
   });
 

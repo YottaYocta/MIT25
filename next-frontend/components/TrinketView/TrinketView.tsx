@@ -40,7 +40,7 @@ export function TrinketView({
   }), [trinket]);
 
   // Fixed position and camera for single trinket view
-  const trinketPosition: [number, number, number] = [0, 4.28, 0]; // Elevated position (4.01 + 0.27)
+  const trinketPosition: [number, number, number] = [0, 4, 0]; // Elevated position (4.01 + 0.27)
   const columnPosition: [number, number, number] = [0, 0, 0];
   const cameraPosition: [number, number, number] = [1.6, 4.2, 1.6];
   const cameraTarget: [number, number, number] = [0, 4.0, 0];
@@ -49,25 +49,40 @@ export function TrinketView({
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [userRotationY, setUserRotationY] = useState(0);
+  const [userRotationX, setUserRotationX] = useState(0);
   const dragStartXRef = useRef<number | null>(null);
+  const dragStartYRef = useRef<number | null>(null);
   const baseRotationYRef = useRef<number>(0);
+  const baseRotationXRef = useRef<number>(0);
 
-  const startDrag = useCallback((clientX: number) => {
+  const startDrag = useCallback((clientX: number, clientY: number) => {
     dragStartXRef.current = clientX;
+    dragStartYRef.current = clientY;
     baseRotationYRef.current = userRotationY;
+    baseRotationXRef.current = userRotationX;
     setIsDragging(true);
-  }, [userRotationY]);
+  }, [userRotationY, userRotationX]);
 
-  const updateDrag = useCallback((clientX: number) => {
-    if (!isDragging || dragStartXRef.current === null) return;
+  const updateDrag = useCallback((clientX: number, clientY: number) => {
+    if (!isDragging || dragStartXRef.current === null || dragStartYRef.current === null) return;
     const deltaX = clientX - dragStartXRef.current;
+    const deltaY = clientY - dragStartYRef.current;
     const rotationPerPixel = 0.006; // radians per pixel
+    
+    // Horizontal drag controls Y rotation (yaw)
     setUserRotationY(baseRotationYRef.current + deltaX * rotationPerPixel);
+    
+    // Vertical drag controls X rotation (pitch) - inverted for natural "lifting" feel
+    const pitchRotation = baseRotationXRef.current - deltaY * rotationPerPixel;
+    // Clamp pitch between -π/2 and π/2 to prevent over-rotation
+    const clampedPitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitchRotation));
+    setUserRotationX(clampedPitch);
   }, [isDragging]);
 
   const endDrag = useCallback(() => {
     setIsDragging(false);
     dragStartXRef.current = null;
+    dragStartYRef.current = null;
   }, []);
 
   // Touch handlers
@@ -75,14 +90,14 @@ export function TrinketView({
     if (!enableTouch) return;
     if (e.touches.length !== 1) return;
     const touch = e.touches[0];
-    startDrag(touch.clientX);
+    startDrag(touch.clientX, touch.clientY);
   }, [enableTouch, startDrag]);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (!enableTouch) return;
     if (!isDragging) return;
     const touch = e.touches[0];
-    updateDrag(touch.clientX);
+    updateDrag(touch.clientX, touch.clientY);
   }, [enableTouch, isDragging, updateDrag]);
 
   const handleTouchEnd = useCallback(() => {
@@ -93,13 +108,13 @@ export function TrinketView({
   // Mouse handlers
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
-    startDrag(e.clientX);
+    startDrag(e.clientX, e.clientY);
   }, [startDrag]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!isDragging) return;
     e.preventDefault();
-    updateDrag(e.clientX);
+    updateDrag(e.clientX, e.clientY);
   }, [isDragging, updateDrag]);
 
   const handleMouseUp = useCallback((e: React.MouseEvent) => {
@@ -181,7 +196,8 @@ export function TrinketView({
             isFocused={false}
             enableBobbing={true}
             userRotationY={userRotationY}
-            autoRotate={!isDragging}
+            userRotationX={userRotationX}
+            autoRotate={false}
           />
         </Suspense>
 

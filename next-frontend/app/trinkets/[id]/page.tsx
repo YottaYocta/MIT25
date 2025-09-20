@@ -28,14 +28,14 @@ export default function TrinketPage() {
 
       try {
         setLoading(true);
-        console.log('🔍 TrinketPage: Fetching trinket with ID:', params.id);
+        // console.log('🔍 TrinketPage: Fetching trinket with ID:', params.id);
         
         const response = await fetch(`/api/trinkets/${params.id}`, {
           credentials: 'include',
         });
 
-        console.log('📡 TrinketPage: API response status:', response.status);
-        console.log('📡 TrinketPage: API response headers:', Object.fromEntries(response.headers.entries()));
+        // console.log('📡 TrinketPage: API response status:', response.status);
+        // console.log('📡 TrinketPage: API response headers:', Object.fromEntries(response.headers.entries()));
 
         if (!response.ok) {
           console.error('❌ TrinketPage: API request failed with status:', response.status);
@@ -50,16 +50,16 @@ export default function TrinketPage() {
         }
 
         const apiTrinket: Trinket = await response.json();
-        console.log('📊 TrinketPage: Received trinket data:', apiTrinket);
+        // console.log('📊 TrinketPage: Received trinket data:', apiTrinket);
         
         // Check if trinket has a valid model
         const modelPath = apiTrinket.model_url || apiTrinket.model_path;
-        console.log('🔍 TrinketPage: Raw model path from API:', modelPath);
-        console.log('🔍 TrinketPage: model_url:', apiTrinket.model_url);
-        console.log('🔍 TrinketPage: model_path:', apiTrinket.model_path);
+        // console.log('🔍 TrinketPage: Raw model path from API:', modelPath);
+        // console.log('🔍 TrinketPage: model_url:', apiTrinket.model_url);
+        // console.log('🔍 TrinketPage: model_path:', apiTrinket.model_path);
         
         if (!modelPath || modelPath.trim() === '') {
-          console.error('❌ TrinketPage: No model path found in trinket data');
+          // console.error('❌ TrinketPage: No model path found in trinket data');
           setError('This trinket is missing its 3D model');
           return;
         }
@@ -71,17 +71,17 @@ export default function TrinketPage() {
         
         // Construct proper API URL for the model file
         const modelApiUrl = `/api/trinkets/${apiTrinket.id}/files/model`;
-        console.log('🔍 TrinketPage: Constructed model API URL:', modelApiUrl);
+        // console.log('🔍 TrinketPage: Constructed model API URL:', modelApiUrl);
         
         // Test if the model endpoint is accessible
         try {
-          console.log('🔍 TrinketPage: Testing model endpoint accessibility...');
+          // console.log('🔍 TrinketPage: Testing model endpoint accessibility...');
           const modelTestResponse = await fetch(modelApiUrl, { 
             method: 'HEAD',
             credentials: 'include' 
           });
-          console.log('📡 TrinketPage: Model endpoint test status:', modelTestResponse.status);
-          console.log('📡 TrinketPage: Model endpoint headers:', Object.fromEntries(modelTestResponse.headers.entries()));
+          // console.log('📡 TrinketPage: Model endpoint test status:', modelTestResponse.status);
+          // console.log('📡 TrinketPage: Model endpoint headers:', Object.fromEntries(modelTestResponse.headers.entries()));
           
           if (!modelTestResponse.ok) {
             console.error('❌ TrinketPage: Model endpoint not accessible, status:', modelTestResponse.status);
