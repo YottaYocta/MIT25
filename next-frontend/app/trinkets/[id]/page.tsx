@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation';
 import { TrinketView } from '@/components/TrinketView';
 import { TrinketData } from '@/components/CollectionView/types';
 import { Trinket } from '@/lib/types';
-import { ConditionalNav } from '@/components/ConditionalNav';
 import FloatingShareButton from '@/components/FloatingShareButton';
 import { Albert_Sans } from 'next/font/google';
 
@@ -169,7 +168,6 @@ export default function TrinketPage() {
         onClose={handleClose}
       />
       <FloatingShareButton />
-      <ConditionalNav />
     </div>
   );
 }

@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import FloatingInput from "@/components/Input";
-import { ConditionalNav } from "@/components/ConditionalNav";
 import { convertToPng } from "@/lib/convertToPng";
 
 export default function UploadPage() {
@@ -188,7 +187,7 @@ export default function UploadPage() {
   const canFinish = genStatus === "success";
 
   return (
-    <main className="min-h-svh flex items-center justify-center p-6">
+    <main className="min-h-svh flex items-center justify-center p-6 pb-24">
       <div className="w-full max-w-md">
         <h1 className="text-2xl font-semibold mb-4">Upload image</h1>
 
@@ -330,7 +329,6 @@ export default function UploadPage() {
           </div>
         )}
       </div>
-      <ConditionalNav />
     </main>
   );
 }

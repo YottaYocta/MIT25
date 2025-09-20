@@ -15,7 +15,7 @@ export default async function SettingsPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6">
+    <main className="min-h-screen flex items-center justify-center p-6 pb-24">
       <div className="w-full max-w-sm">
         <SettingsForm profile={profile} />
       </div>

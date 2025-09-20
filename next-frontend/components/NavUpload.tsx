@@ -12,7 +12,7 @@ type UploadStep = {
   errorMessage?: string;
 };
 
-export const NavUpload = () => {
+export const NavUpload = ({ className = "" }: { className?: string }) => {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -196,7 +196,7 @@ export const NavUpload = () => {
   };
 
   const getButtonClassName = () => {
-    const baseClass = "w-16 h-16 rounded-full flex items-center justify-center transition-all";
+    const baseClass = `w-16 h-16 rounded-full flex items-center justify-center transition-all ${className}`;
     if (uploadSuccess) {
       return `${baseClass} bg-green-500/20 hover:bg-green-500/30 border-green-500/30`;
     }

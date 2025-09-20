@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import { RecentTrinkets } from "@/components/RecentTrinkets";
 import { Collections } from "@/components/Collections";
 import { Albert_Sans } from "next/font/google";
-import { ConditionalNav } from "@/components/ConditionalNav";
 import Link from "next/link";
 import Button from "@/components/Button";
 
@@ -20,7 +19,7 @@ export default async function Home() {
 
   if (!user) {
     return (
-      <main className="h-dvh flex flex-col items-center justify-start p-6 overflow-x-clip">
+      <main className="h-dvh flex flex-col items-center justify-start p-6 pb-24 overflow-x-clip">
         <div className="w-full max-w-2xl flex flex-col gap-6">
           <div className="text-center mb-6">
             <h1 className={`text-3xl font-bold mb-2 ${albertSans.className}`}>
@@ -43,13 +42,12 @@ export default async function Home() {
             <RecentTrinkets filterType="public" />
           </div>
         </div>
-        <ConditionalNav />
       </main>
     );
   }
 
   return (
-    <main className="h-dvh flex flex-col items-center justify-start p-6 overflow-x-clip">
+    <main className="h-dvh flex flex-col items-center justify-start p-6 pb-24 overflow-x-clip">
       <div className="w-full max-w-2xl flex flex-col gap-6">
         <div>
           <h2 className={`font-bold text-lg ${albertSans.className}`}>
@@ -65,7 +63,6 @@ export default async function Home() {
           <RecentTrinkets filterType="public" />
         </div>
       </div>
-      <ConditionalNav />
     </main>
   );
 }
