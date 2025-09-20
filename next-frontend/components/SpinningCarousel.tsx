@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 
 interface CarouselProps {
   className?: string;
@@ -34,7 +34,7 @@ export const SpinningCarousel: React.FC<CarouselProps> = ({
   const clamp = (value: number, min: number, max: number) =>
     Math.max(min, Math.min(max, value));
 
-  const indexToRange = (index: number) => index * spacing;
+  const indexToRange = useCallback((index: number) => index * spacing, [spacing]);
 
   const rangeToCoord = (x: number) => {
     const dx = x - dragOffset.current;
@@ -209,10 +209,84 @@ export const SpinningCarousel: React.FC<CarouselProps> = ({
     }
   };
 
+  // ----- Wheel handler (trackpad horizontal scroll on desktop) -----
+  const wheelTimeoutRef = useRef<number | null>(null);
+
+  // Native non-passive wheel listener for reliable trackpad handling
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const onWheel = (e: WheelEvent) => {
+      const absX = Math.abs(e.deltaX);
+      const absY = Math.abs(e.deltaY);
+      const delta = absX >= absY ? e.deltaX : (e.shiftKey ? e.deltaY : 0);
+      if (!delta) return;
+
+      e.preventDefault();
+
+      if (animationFrame.current !== null) {
+        cancelAnimationFrame(animationFrame.current);
+        animationFrame.current = null;
+      }
+      easeTargetRef.current = null;
+
+      dragOffset.current += delta;
+      dragOffset.current = clamp(dragOffset.current, 0, maxIndex * spacing);
+      forceRender({});
+
+      if (wheelTimeoutRef.current) {
+        clearTimeout(wheelTimeoutRef.current);
+      }
+      wheelTimeoutRef.current = window.setTimeout(() => {
+        const nearestIndex = clamp(
+          Math.round(dragOffset.current / spacing),
+          0,
+          maxIndex
+        );
+
+        currentIndexRef.current = nearestIndex;
+        easeTargetRef.current = indexToRange(nearestIndex);
+        handleFocused?.(nearestIndex);
+
+        const animate = () => {
+          if (easeTargetRef.current === null) return;
+
+          const current = dragOffset.current;
+          const target = easeTargetRef.current;
+          const next = lerp(current, target, 0.2);
+
+          dragOffset.current = next;
+          forceRender({});
+
+          if (Math.abs(next - target) < 1) {
+            dragOffset.current = target;
+            easeTargetRef.current = null;
+            animationFrame.current = null;
+            forceRender({});
+            return;
+          }
+
+          animationFrame.current = requestAnimationFrame(animate);
+        };
+
+        animationFrame.current = requestAnimationFrame(animate);
+      }, 120);
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      el.removeEventListener("wheel", onWheel);
+    };
+  }, [maxIndex, spacing, handleFocused, indexToRange]);
+
   useEffect(() => {
     return () => {
       if (animationFrame.current) {
         cancelAnimationFrame(animationFrame.current);
+      }
+      if (wheelTimeoutRef.current) {
+        clearTimeout(wheelTimeoutRef.current);
       }
     };
   }, []);
@@ -233,6 +307,8 @@ export const SpinningCarousel: React.FC<CarouselProps> = ({
       style={{
         userSelect: isDragging.current ? "none" : "auto",
         cursor: "grab",
+        overscrollBehavior: "contain",
+        overscrollBehaviorX: "contain",
       }}
     >
       {children.map((child, index) => {
